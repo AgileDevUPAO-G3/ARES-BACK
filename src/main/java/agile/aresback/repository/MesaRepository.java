@@ -1,4 +1,10 @@
 package agile.aresback.repository;
+import agile.aresback.model.entity.Mesa;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface MesaRepository {
+
+@Repository
+public interface MesaRepository extends JpaRepository<Mesa, Integer> {
 }
+
