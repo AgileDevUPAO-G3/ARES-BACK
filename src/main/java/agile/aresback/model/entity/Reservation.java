@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-
 @Data
 @Entity
 @Table(name = "Reservation")
@@ -29,7 +28,7 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private StateReservation stateReservation;
 
-    //Relaciones
+    // Relaciones
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id", nullable = false)
     private Mesa mesa;
@@ -39,7 +38,7 @@ public class Reservation {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "client_id", nullable = false)
+    @JoinColumn(name = "client_id",nullable = false)
     private Client client;
-
 }
+
