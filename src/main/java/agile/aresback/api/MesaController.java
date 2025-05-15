@@ -1,6 +1,7 @@
 package agile.aresback.api;
 
 
+import agile.aresback.dto.MesaDto;
 import agile.aresback.model.entity.Mesa;
 import agile.aresback.service.MesaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +20,9 @@ public class MesaController {
     private MesaService mesaService;
 
     @GetMapping
-    public ResponseEntity<List<Mesa>> getAllMesas() {
-        List<Mesa> mesas = mesaService.getAllMesa();
-        return ResponseEntity.ok(mesas);
+    public ResponseEntity<List<MesaDto>> getAllMesaDto() {
+        List<MesaDto> mesasDto = mesaService.getAllMesasDto();
+        return ResponseEntity.ok(mesasDto);
     }
 
 
