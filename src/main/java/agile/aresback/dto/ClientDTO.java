@@ -7,10 +7,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MesaDto {
+public class ClientDTO {
     private Integer id;
-    private Integer capacidad;
-    private String estado;
-    private Integer numeroMesa;
-    private Integer zoneId;
+    private String nombre;
+    private String apellido;
+    private String email;
+    private String telefono;
+    private String dni;
 }

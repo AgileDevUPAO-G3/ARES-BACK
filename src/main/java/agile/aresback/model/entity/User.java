@@ -1,28 +1,31 @@
 package agile.aresback.model.entity;
-import agile.aresback.model.enums.Role;
-import jakarta.persistence.*;
-import lombok.Data;
-import java.util.List;
 
+import jakarta.persistence.*;
+import lombok.*;
+import java.util.List;
+import agile.aresback.model.enums.Role;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "user")
+@Table(name = "user") // Importante para evitar conflictos con la palabra reservada "user"
 public class User {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(name ="username",unique=true,nullable=false)
+    private Integer id;
+
+    @Column(nullable = false, unique = true)
     private String username;
-    @Column(name = "password",unique=true, nullable=false)
+
+    @Column(nullable = false, unique = true)
     private String password;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user")
     private List<Reservation> reservations;
-
 
 }
