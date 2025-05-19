@@ -27,5 +27,4 @@ public class Mesa {
 
     @OneToMany(mappedBy = "mesa", cascade = CascadeType.ALL)
     private List<Reservation> reservation;
-
 }

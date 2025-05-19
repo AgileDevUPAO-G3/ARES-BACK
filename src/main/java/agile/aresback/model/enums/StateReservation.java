@@ -4,6 +4,8 @@ public enum StateReservation {
 
     NO_ASISTIO,
     EN_ESPERA,
-    ASISTIO
+    ASISTIO,
+    EN_PROGRESO,
+    OCUPADA
 
 }
