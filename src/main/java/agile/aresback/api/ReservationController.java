@@ -16,12 +16,12 @@ public class ReservationController {
     private ReservationService reservationService;
 
     // Endpoint para obtener las reservas de una mesa
-    @GetMapping("/mesa/{mesaId}")
+   /* @GetMapping("/mesa/{mesaId}")
     public List<Reservation> getReservationsForMesa(@PathVariable Integer mesaId) {
         Mesa mesa = new Mesa();  // Aquí puedes cargar la mesa por ID desde la base de datos si es necesario
         mesa.setId(mesaId);
         return reservationService.getReservationsForMesa(mesa);
-    }
+    }*/
 
     // Endpoint para crear una nueva reserva
     @PostMapping("/create")

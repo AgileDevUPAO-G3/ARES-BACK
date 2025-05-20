@@ -1,10 +1,11 @@
 package agile.aresback.service;
 
-import agile.aresback.dto.DisponibilidadDto;
+import agile.aresback.dto.MesaDto;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
 public interface DisponibilidadService {
-    List<DisponibilidadDto> obtenerMesasDisponibles(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin);
+    List<MesaDto> buscarMesasDisponibles(LocalDate fecha, LocalTime hora);
 }

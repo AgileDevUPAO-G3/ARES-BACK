@@ -28,7 +28,7 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private StateReservation stateReservation;
 
-    // Relaciones
+    // Relations
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id", nullable = false)
     private Mesa mesa;

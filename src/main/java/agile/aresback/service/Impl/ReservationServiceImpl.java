@@ -21,10 +21,10 @@ public class ReservationServiceImpl implements ReservationService {
     @Autowired
     private MesaRepository mesaRepository;
 
-    @Override
+    /*@Override
     public List<Reservation> getReservationsForMesa(Mesa mesa) {
         return reservationRepository.findByMesa(mesa); // Obtener las reservas de una mesa
-    }
+    }*/
 
     @Override
     public Reservation createReservation(Reservation reservation) {

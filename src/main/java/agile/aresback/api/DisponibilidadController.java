@@ -1,30 +1,25 @@
 package agile.aresback.api;
 
 import agile.aresback.dto.DisponibilidadDto;
+import agile.aresback.dto.MesaDto;
+import agile.aresback.model.entity.Mesa;
 import agile.aresback.service.DisponibilidadService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/disponibilidad")
-@RequiredArgsConstructor
 public class DisponibilidadController {
 
-    private final DisponibilidadService disponibilidadService;
+    @Autowired
+    private DisponibilidadService disponibilidadService;
 
-    @GetMapping
-    public ResponseEntity<List<DisponibilidadDto>> obtenerDisponibles(
-            @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam("horaInicio") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime horaInicio,
-            @RequestParam("horaFin") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime horaFin
-    ) {
-        List<DisponibilidadDto> disponibles = disponibilidadService.obtenerMesasDisponibles(fecha, horaInicio, horaFin);
+    @PostMapping
+    public ResponseEntity<List<MesaDto>> consultarDisponibilidad(@RequestBody DisponibilidadDto dto) {
+        List<MesaDto> disponibles = disponibilidadService.buscarMesasDisponibles(dto.getFecha(), dto.getHora());
         return ResponseEntity.ok(disponibles);
     }
 }
