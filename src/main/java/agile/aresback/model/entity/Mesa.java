@@ -1,12 +1,13 @@
 package agile.aresback.model.entity;
 
-import agile.aresback.model.enums.StateTable;
 import jakarta.persistence.*;
-import lombok.Data;
-
+import lombok.*;
 import java.util.List;
+import agile.aresback.model.enums.StateTable;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "mesa")
 public class Mesa {
@@ -14,18 +15,19 @@ public class Mesa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "capacidad", nullable = false, length = 10)
+
     private Integer capacidad;
-    @Column(name ="numero_mesa", nullable = false)
-    private Integer numeroMesa;
+
     @Enumerated(EnumType.STRING)
     private StateTable estado;
 
+    @Column(name = "numero_mesa", nullable = false)
+    private Integer numeroMesa;
+
     @ManyToOne
-    @JoinColumn(name = "zone_id", nullable = false)
+    @JoinColumn(name = "zone_id")
     private Zone zone;
 
-    @OneToMany(mappedBy = "mesa", cascade = CascadeType.ALL)
-    private List<Reservation> reservation;
-
+    @OneToMany(mappedBy = "mesa")
+    private List<Reservation> reservations;
 }
