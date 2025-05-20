@@ -8,6 +8,7 @@ import agile.aresback.service.ClientService;
 import agile.aresback.service.MesaService;
 import agile.aresback.service.ReservationService;
 import agile.aresback.service.UserService;
+import jakarta.validation.Valid;
 import agile.aresback.model.entity.Client;
 import agile.aresback.model.entity.User;
 
@@ -47,7 +48,7 @@ public class ReservationController {
 
     // Endpoint para crear una nueva reserva
     @PostMapping("/create")
-    public Reservation createReservation(@RequestBody Reservation reservation) {
+    public Reservation createReservation(@RequestBody @Valid Reservation reservation) {
         return reservationService.createReservation(reservation);
     }
 
