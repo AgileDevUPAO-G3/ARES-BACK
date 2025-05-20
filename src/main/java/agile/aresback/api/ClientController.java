@@ -53,4 +53,11 @@ public class ClientController {
     public void deleteClient(@PathVariable Integer id) {
         clientService.deleteById(id);
     }
+
+    @GetMapping("/byDni/{dni}")
+    public ClientDTO getClientByDni(@PathVariable String dni) {
+        Client client = clientService.findByDni(dni)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+        return clientMapper.toDTO(client);
+    }
 }

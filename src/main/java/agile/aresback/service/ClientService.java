@@ -15,4 +15,6 @@ public interface ClientService {
     Optional<Client> findById(Integer id);
 
     void deleteById(Integer id);
+
+    Optional<Client> findByDni(String dni);
 }

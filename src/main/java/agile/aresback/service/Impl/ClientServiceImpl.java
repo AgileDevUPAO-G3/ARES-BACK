@@ -32,4 +32,9 @@ public class ClientServiceImpl implements ClientService {
     public void deleteById(Integer id) {
         clientRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<Client> findByDni(String dni) {
+        return clientRepository.findByDni(dni);
+    }
 }
