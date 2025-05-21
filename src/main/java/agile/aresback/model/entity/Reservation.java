@@ -2,6 +2,8 @@ package agile.aresback.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import agile.aresback.model.enums.StateReservation;
@@ -21,7 +23,7 @@ public class Reservation {
     private LocalDateTime fechaRegistro;
 
     @Column(nullable = false)
-    private LocalDateTime fechaReservada;
+    private LocalDate fechaReservada;
 
     @Column(nullable = false)
     private LocalTime horaInicio;
@@ -40,7 +42,4 @@ public class Reservation {
     @JoinColumn(name = "mesa_id", nullable = false)
     private Mesa mesa;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
 }

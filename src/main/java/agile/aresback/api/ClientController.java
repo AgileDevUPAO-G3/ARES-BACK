@@ -1,11 +1,15 @@
 package agile.aresback.api;
 
 import agile.aresback.dto.ClientDTO;
+import agile.aresback.exception.ResourceNotFoundException;
 import agile.aresback.mapper.ClientMapper;
 import agile.aresback.model.entity.Client;
 import agile.aresback.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,44 +24,46 @@ public class ClientController {
     private ClientMapper clientMapper;
 
     @GetMapping
-    public List<ClientDTO> getAllClients() {
-        return clientService.findAll()
+    public ResponseEntity<List<ClientDTO>> getAllClients() {
+        List<ClientDTO> clients = clientService.findAll()
                 .stream()
                 .map(clientMapper::toDTO)
                 .collect(Collectors.toList());
+        return ResponseEntity.ok(clients);
     }
 
     @GetMapping("/{id}")
-    public ClientDTO getClientById(@PathVariable Integer id) {
+    public ResponseEntity<ClientDTO> getClientById(@PathVariable Integer id) {
         Client client = clientService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        return clientMapper.toDTO(client);
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
+        return ResponseEntity.ok(clientMapper.toDTO(client));
     }
 
     @PostMapping
-    public ClientDTO createClient(@RequestBody ClientDTO clientDTO) {
+    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO clientDTO) {
         Client client = clientMapper.toEntity(clientDTO);
         Client saved = clientService.save(client);
-        return clientMapper.toDTO(saved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(clientMapper.toDTO(saved));
     }
 
     @PutMapping("/{id}")
-    public ClientDTO updateClient(@PathVariable Integer id, @RequestBody ClientDTO clientDTO) {
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable Integer id, @RequestBody ClientDTO clientDTO) {
         Client client = clientMapper.toEntity(clientDTO);
         client.setId(id);
         Client updated = clientService.save(client);
-        return clientMapper.toDTO(updated);
+        return ResponseEntity.ok(clientMapper.toDTO(updated));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteClient(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteClient(@PathVariable Integer id) {
         clientService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/byDni/{dni}")
-    public ClientDTO getClientByDni(@PathVariable String dni) {
+    public ResponseEntity<ClientDTO> getClientByDni(@PathVariable String dni) {
         Client client = clientService.findByDni(dni)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        return clientMapper.toDTO(client);
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con DNI: " + dni));
+        return ResponseEntity.ok(clientMapper.toDTO(client));
     }
 }

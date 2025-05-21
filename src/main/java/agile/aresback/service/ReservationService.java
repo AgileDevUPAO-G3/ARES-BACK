@@ -1,21 +1,22 @@
 package agile.aresback.service;
 
+import agile.aresback.dto.ReservationDTO;
 import agile.aresback.model.entity.Mesa;
 import agile.aresback.model.entity.Reservation;
-import java.util.Optional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationService {
 
-    List<Reservation> getReservationsForMesa(Mesa mesa); // Obtener reservas de una mesa
+    List<Reservation> getReservationsForMesa(Mesa mesa);
 
-    Reservation createReservation(Reservation reservation); // Crear una nueva reserva
+    Reservation createReservation(Reservation reservation);
 
-    List<Reservation> getReservationsByTimeRange(LocalDateTime startTime, LocalDateTime endTime); // Obtener reservas
-                                                                                                  // dentro de un rango
-                                                                                                  // de tiempo
+    Reservation createReservationWithClient(ReservationDTO reservationDTO);
+
+    List<Reservation> getReservationsByTimeRange(LocalDate startDate, LocalDate endDate);
 
     List<Reservation> findAll();
 
