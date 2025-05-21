@@ -17,7 +17,7 @@ public class MesaMapper {
         dto.setCapacidad(mesa.getCapacidad());
         dto.setEstado(mesa.getEstado().name()); // Enum a String
         dto.setNumeroMesa(mesa.getNumeroMesa());
-        dto.setZoneId(mesa.getZone() != null ? mesa.getZone().getId() : null);
+        dto.setZoneName(mesa.getZone() != null ? mesa.getZone().getName() : null);
         return dto;
     }
 

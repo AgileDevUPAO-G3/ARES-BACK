@@ -12,5 +12,5 @@ public class MesaDto {
     private Integer capacidad;
     private String estado;
     private Integer numeroMesa;
-    private Integer zoneId;
+    private String zoneName;
 }

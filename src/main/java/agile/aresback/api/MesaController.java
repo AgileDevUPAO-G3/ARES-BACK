@@ -46,7 +46,7 @@ public class MesaController {
         return mesaMapper.toDTO(mesa);
     }
 
-    @PostMapping
+    /*@PostMapping
     public MesaDto createMesa(@RequestBody MesaDto mesaDto) {
         Zone zone = zoneService.findById(mesaDto.getZoneId())
                 .orElseThrow(() -> new RuntimeException("Zona no encontrada"));
@@ -68,6 +68,6 @@ public class MesaController {
     @DeleteMapping("/{id}")
     public void deleteMesa(@PathVariable Integer id) {
         mesaService.deleteById(id);
-    }
+    }*/
 
 }
