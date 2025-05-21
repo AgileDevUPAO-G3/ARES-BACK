@@ -1,35 +1,36 @@
 package agile.aresback.model.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import java.util.List;
 
-
-@Entity
 @Data
-@Table(name = "cliente")
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "client")
 public class Client {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "dni_cliente", nullable = false, unique = true)
-    private String dniCliente; // El DNI como identificador único del cliente
+    @Column(nullable = false)
+    private String nombre;
 
-    @Column(name = "nombre_cliente", nullable = false)
-    private String clienteNombre;
+    @Column(nullable = false)
+    private String apellido;
 
-    @Column(name = "apellido_cliente", nullable = false)
-    private String clienteApellido;
+    @Column(nullable = false)
+    private String email;
 
-    @Column(name = "email_cliente", nullable = false)
-    private String clienteEmail;
+    @Column(nullable = false)
+    private String telefono;
 
-    @Column(name = "telefono_cliente", nullable = false)
-    private String clienteTelefono;
+    @Column(nullable = false, unique = true)
+    private String dni;
 
-    // Relación con reservas
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-    private List<Reservation> reservas;
+    // Relación: Un cliente puede tener muchas reservas
+    @OneToMany(mappedBy = "client")
+    private List<Reservation> reservations;
 }
