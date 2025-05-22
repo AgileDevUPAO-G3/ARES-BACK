@@ -1,20 +1,20 @@
 package agile.aresback.api;
 
 import agile.aresback.dto.ReservationDTO;
+import agile.aresback.exception.ResourceNotFoundException;
 import agile.aresback.mapper.ReservationMapper;
 import agile.aresback.model.entity.Mesa;
 import agile.aresback.model.entity.Reservation;
 import agile.aresback.service.ClientService;
 import agile.aresback.service.MesaService;
 import agile.aresback.service.ReservationService;
-import agile.aresback.service.UserService;
 import jakarta.validation.Valid;
-import agile.aresback.model.entity.Client;
-import agile.aresback.model.entity.User;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,86 +30,78 @@ public class ReservationController {
     private ReservationMapper reservationMapper;
 
     @Autowired
-    private ClientService clientService;
-
-    @Autowired
     private MesaService mesaService;
 
     @Autowired
-    private UserService userService;
+    private ClientService clientService;
 
-    // Endpoint para obtener las reservas de una mesa
-   /* @GetMapping("/mesa/{mesaId}")
-    public List<Reservation> getReservationsForMesa(@PathVariable Integer mesaId) {
-        Mesa mesa = new Mesa(); // Aquí puedes cargar la mesa por ID desde la base de datos si es necesario
-        mesa.setId(mesaId);
-        return reservationService.getReservationsForMesa(mesa);
-    }*/
-
-    // Endpoint para crear una nueva reserva
-    @PostMapping("/create")
-    public Reservation createReservation(@RequestBody @Valid Reservation reservation) {
-        return reservationService.createReservation(reservation);
-    }
-
-    // Endpoint para obtener reservas dentro de un rango de tiempo
-    @GetMapping("/byTimeRange")
-    public List<Reservation> getReservationsByTimeRange(@RequestParam LocalDateTime startTime,
-            @RequestParam LocalDateTime endTime) {
-        return reservationService.getReservationsByTimeRange(startTime, endTime);
-    }
-
-    @GetMapping
-    public List<ReservationDTO> getAllReservations() {
-        return reservationService.findAll()
-                .stream()
+    // Obtener reservas para una mesa, validando existencia de la mesa
+    @GetMapping("/mesa/{mesaId}")
+    public ResponseEntity<List<ReservationDTO>> getReservationsForMesa(@PathVariable Integer mesaId) {
+        Mesa mesa = mesaService.findById(mesaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mesa no encontrada"));
+        List<ReservationDTO> reservasDTO = reservationService.getReservationsForMesa(mesa).stream()
                 .map(reservationMapper::toDTO)
                 .collect(Collectors.toList());
+        return ResponseEntity.ok(reservasDTO);
     }
 
-    @GetMapping("/{id}")
-    public ReservationDTO getReservationById(@PathVariable Integer id) {
-        Reservation reservation = reservationService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
-        return reservationMapper.toDTO(reservation);
-    }
-
+    // Crear reserva con DTO que incluye datos cliente, usando la lógica en el servicio
     @PostMapping
-    public ReservationDTO createReservation(@RequestBody ReservationDTO reservationDTO) {
-        Client client = clientService.findById(reservationDTO.getClientId())
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        Mesa mesa = mesaService.findById(reservationDTO.getMesaId())
-                .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
-        User user = null;
-        if (reservationDTO.getUserId() != null) {
-            user = userService.findById(reservationDTO.getUserId())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        }
-        Reservation reservation = reservationMapper.toEntity(reservationDTO, client, mesa, user);
-        Reservation saved = reservationService.createReservation(reservation);
-        return reservationMapper.toDTO(saved);
+    public ResponseEntity<ReservationDTO> createReservation(@RequestBody @Valid ReservationDTO reservationDTO) {
+        Reservation reservationSaved = reservationService.createReservationWithClient(reservationDTO);
+        ReservationDTO responseDTO = reservationMapper.toDTO(reservationSaved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
+    @GetMapping("/byTimeRange")
+    public ResponseEntity<List<ReservationDTO>> getReservationsByTimeRange(@RequestParam LocalDate startDate,
+                                                                           @RequestParam LocalDate endDate) {
+        List<ReservationDTO> reservasDTO = reservationService.getReservationsByTimeRange(startDate, endDate).stream()
+                .map(reservationMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reservasDTO);
+    }
+
+
+    // Obtener todas las reservas
+    @GetMapping
+    public ResponseEntity<List<ReservationDTO>> getAllReservations() {
+        List<ReservationDTO> reservasDTO = reservationService.findAll().stream()
+                .map(reservationMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reservasDTO);
+    }
+
+    // Obtener reserva por id
+    @GetMapping("/{id}")
+    public ResponseEntity<ReservationDTO> getReservationById(@PathVariable Integer id) {
+        Reservation reservation = reservationService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada"));
+        return ResponseEntity.ok(reservationMapper.toDTO(reservation));
+    }
+
+    // Actualizar reserva por id, usando DTO sin User
     @PutMapping("/{id}")
-    public ReservationDTO updateReservation(@PathVariable Integer id, @RequestBody ReservationDTO reservationDTO) {
-        Client client = clientService.findById(reservationDTO.getClientId())
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        Mesa mesa = mesaService.findById(reservationDTO.getMesaId())
-                .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
-        User user = null;
-        if (reservationDTO.getUserId() != null) {
-            user = userService.findById(reservationDTO.getUserId())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        }
-        Reservation reservation = reservationMapper.toEntity(reservationDTO, client, mesa, user);
+    public ResponseEntity<ReservationDTO> updateReservation(@PathVariable Integer id,
+                                                            @RequestBody @Valid ReservationDTO reservationDTO) {
+        var client = clientService.findByDni(reservationDTO.getDniCliente())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado"));
+
+        var mesa = mesaService.findById(reservationDTO.getMesaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Mesa no encontrada"));
+
+        Reservation reservation = reservationMapper.toEntity(reservationDTO, client, mesa);
         reservation.setId(id);
+
         Reservation updated = reservationService.createReservation(reservation);
-        return reservationMapper.toDTO(updated);
+        return ResponseEntity.ok(reservationMapper.toDTO(updated));
     }
 
+    // Eliminar reserva por id
     @DeleteMapping("/{id}")
-    public void deleteReservation(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteReservation(@PathVariable Integer id) {
         reservationService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
-
 }
