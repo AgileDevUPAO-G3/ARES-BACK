@@ -1,9 +1,12 @@
 package agile.aresback.model.entity;
+
 import agile.aresback.model.enums.StateReservation;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 import java.time.LocalTime;
+
 @Data
 @Entity
 @Table(name = "Reservation")
@@ -14,10 +17,10 @@ public class Reservation {
     private Integer id;
 
     @Column(name = "fecha_reservada", nullable = false)
-    private LocalDateTime fechaReservada;
+    private LocalDate fechaReservada;
 
     @Column(name = "fecha_registro", nullable = false)
-    private LocalDateTime fechaRegistro;
+    private LocalDate fechaRegistro;
 
     @Column(name = "hora_inicio", nullable = false)
     private LocalTime horaInicio;
@@ -28,7 +31,6 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private StateReservation stateReservation;
 
-    // Relations
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id", nullable = false)
     private Mesa mesa;
@@ -41,4 +43,3 @@ public class Reservation {
     @JoinColumn(name = "client_id",nullable = false)
     private Client client;
 }
-

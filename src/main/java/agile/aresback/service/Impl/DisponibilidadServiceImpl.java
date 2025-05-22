@@ -33,7 +33,7 @@ public class DisponibilidadServiceImpl implements DisponibilidadService {
                 .map(mesa -> {
                     boolean ocupada = reservas.stream().anyMatch(r ->
                             r.getMesa().getId().equals(mesa.getId()) &&
-                                    r.getFechaReservada().toLocalDate().equals(fecha) &&
+                                    r.getFechaReservada().equals(fecha) && // ✅ Corregido aquí
                                     hora.isBefore(r.getHoraFin()) &&
                                     horaFin.isAfter(r.getHoraInicio()) &&
                                     (

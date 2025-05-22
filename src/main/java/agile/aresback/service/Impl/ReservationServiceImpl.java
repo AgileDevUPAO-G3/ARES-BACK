@@ -37,12 +37,12 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<Reservation> getReservationsForMesa(Mesa mesa) {
-        return reservationRepository.findByMesa(mesa);
+        return reservationRepository.findByMesa(mesa); // Asegúrate de que este método exista en tu repositorio
     }
 
     @Override
     public Reservation createReservation(Reservation reservation) {
-        return reservationRepository.save(reservation); // Crear una nueva reserva
+        return reservationRepository.save(reservation);
     }
 
     @Override
@@ -61,10 +61,10 @@ public class ReservationServiceImpl implements ReservationService {
         Mesa mesa = mesaService.findById(reservationDTO.getMesaId())
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
 
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDate fechaActual = LocalDate.now(); // ✅ separa fecha
+        LocalTime horaActual = LocalTime.now();  // ✅ separa hora
         LocalTime horaFinCalculada = reservationDTO.getHoraInicio().plusHours(2);
 
-        // Validar conflictos antes de crear la reserva
         List<Reservation> conflictos = reservationRepository.findConflictingReservations(
                 mesa.getId(),
                 reservationDTO.getFechaReservada(),
@@ -76,10 +76,8 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         Reservation reservation = reservationMapper.toEntity(reservationDTO, client, mesa);
-        reservation.setFechaRegistro(ahora);
-        reservation.setHoraFin(horaFinCalculada);
-
-        // Forzar estado a EN_ESPERA
+        reservation.setFechaRegistro(fechaActual);  // LocalDate
+        reservation.setHoraFin(horaFinCalculada);   // LocalTime
         reservation.setStateReservation(StateReservation.EN_ESPERA);
 
         return createReservation(reservation);
@@ -98,12 +96,10 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public Optional<Reservation> findById(Integer id) {
         return reservationRepository.findById(id);
-    public java.util.Optional<Reservation> findById(Integer id) {
-        return reservationRepository.findById(id);
     }
 
     @Override
     public void deleteById(Integer id) {
-        reservationRepository.deleteById(id); // Eliminar una reserva por ID
+        reservationRepository.deleteById(id);
     }
 }
