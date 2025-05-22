@@ -44,9 +44,10 @@ public class DisponibilidadServiceImpl implements DisponibilidadService {
                     );
 
                     return new MesaDto(
-                            mesa.getNumeroMesa(),
+                            mesa.getId(),
                             mesa.getCapacidad(),
-                            ocupada ? StateTable.RESERVADO : StateTable.DISPONIBLE,
+                            (ocupada ? StateTable.RESERVADO : StateTable.DISPONIBLE).name(),
+                            mesa.getNumeroMesa(),
                             mesa.getZone().getName()
                     );
                 })

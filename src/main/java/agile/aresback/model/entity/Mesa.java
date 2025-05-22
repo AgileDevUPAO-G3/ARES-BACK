@@ -1,19 +1,33 @@
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-private Integer id;
+package agile.aresback.model.entity;
 
-@Column(name = "capacidad", nullable = false)
-private Integer capacidad;
+import jakarta.persistence.*;
+import lombok.*;
+import java.util.List;
+import agile.aresback.model.enums.StateTable;
 
-@Column(name = "numero_mesa", nullable = false)
-private Integer numeroMesa;
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "mesa")
+public class Mesa {
 
-@Enumerated(EnumType.STRING)
-private StateTable estado;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-@ManyToOne
-@JoinColumn(name = "zone_id")
-private Zone zone;
+    private Integer capacidad;
 
-@OneToMany(mappedBy = "mesa", cascade = CascadeType.ALL)
-private List<Reservation> reservations;
+    @Enumerated(EnumType.STRING)
+    private StateTable estado;
+
+    @Column(name = "numero_mesa", nullable = false)
+    private Integer numeroMesa;
+
+    @ManyToOne
+    @JoinColumn(name = "zone_id")
+    private Zone zone;
+
+    @OneToMany(mappedBy = "mesa")
+    private List<Reservation> reservations;
+}
