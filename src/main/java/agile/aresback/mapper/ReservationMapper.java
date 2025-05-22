@@ -17,20 +17,16 @@ public class ReservationMapper {
         ReservationDTO dto = new ReservationDTO();
         dto.setId(reservation.getId());
 
-        // Fecha registro: LocalDateTime -> LocalDate (solo fecha)
-        if (reservation.getFechaRegistro() != null) {
-            dto.setFechaRegistro(reservation.getFechaRegistro().toLocalDate());
-        }
+        // ✅ Ya es LocalDate directamente
+        dto.setFechaRegistro(reservation.getFechaRegistro());
 
-        // Fecha reservada: LocalDate (igual que DTO)
         dto.setFechaReservada(reservation.getFechaReservada());
-
-        // Hora inicio y fin (LocalTime igual en DTO)
         dto.setHoraInicio(reservation.getHoraInicio());
         dto.setHoraFin(reservation.getHoraFin());
 
-        // Estado reserva a string
-        dto.setStateReservation(reservation.getStateReservation() != null ? reservation.getStateReservation().name() : null);
+        dto.setStateReservation(reservation.getStateReservation() != null
+                ? reservation.getStateReservation().name()
+                : null);
 
         dto.setMesaId(reservation.getMesa() != null ? reservation.getMesa().getId() : null);
 
@@ -58,17 +54,13 @@ public class ReservationMapper {
         Reservation reservation = new Reservation();
         reservation.setId(dto.getId());
 
-        // fechaRegistro debe asignarse en el servicio (no desde DTO)
+        // Se asigna en el servicio
         reservation.setFechaRegistro(null);
 
-        // fechaReservada: LocalDate es igual en DTO y entidad
         reservation.setFechaReservada(dto.getFechaReservada());
-
-        // Hora inicio y fin
         reservation.setHoraInicio(dto.getHoraInicio());
-        reservation.setHoraFin(dto.getHoraFin()); // o puede asignarse en servicio
+        reservation.setHoraFin(dto.getHoraFin());
 
-        // Estado reserva
         if (dto.getStateReservation() != null) {
             reservation.setStateReservation(StateReservation.valueOf(dto.getStateReservation()));
         } else {

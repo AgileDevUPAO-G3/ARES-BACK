@@ -1,45 +1,45 @@
 package agile.aresback.model.entity;
 
+import agile.aresback.model.enums.StateReservation;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import agile.aresback.model.enums.StateReservation;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Table(name = "reservation")
+@Table(name = "Reservation")
 public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
-    private LocalDateTime fechaRegistro;
-
-    @Column(nullable = false)
+    @Column(name = "fecha_reservada", nullable = false)
     private LocalDate fechaReservada;
 
-    @Column(nullable = false)
+    @Column(name = "fecha_registro", nullable = false)
+    private LocalDate fechaRegistro;
+
+    @Column(name = "hora_inicio", nullable = false)
     private LocalTime horaInicio;
 
-    @Column(nullable = false)
+    @Column(name = "hora_fin", nullable = false)
     private LocalTime horaFin;
 
     @Enumerated(EnumType.STRING)
     private StateReservation stateReservation;
 
-    @ManyToOne
-    @JoinColumn(name = "client_id", nullable = false)
-    private Client client;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id", nullable = false)
     private Mesa mesa;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id",nullable = false)
+    private Client client;
 }
