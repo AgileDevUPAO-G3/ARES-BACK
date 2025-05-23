@@ -1,6 +1,7 @@
 package agile.aresback.mapper;
 
 import agile.aresback.dto.ReservationDTO;
+import agile.aresback.dto.ReservationListDTO;
 import agile.aresback.model.entity.Reservation;
 import agile.aresback.model.entity.Client;
 import agile.aresback.model.entity.Mesa;
@@ -72,4 +73,27 @@ public class ReservationMapper {
 
         return reservation;
     }
+
+    // Nuevo método para mapear a ReservationListDTO
+    public ReservationListDTO toListDTO(Reservation reservation) {
+        if (reservation == null) return null;
+
+        ReservationListDTO dto = new ReservationListDTO();
+
+        dto.setId(reservation.getId());
+
+        // Concatenar apellido + nombre
+        String fullName = reservation.getClient().getApellido() + " " + reservation.getClient().getNombre();
+        dto.setNombreCliente(fullName);
+
+        dto.setNumeroMesa(reservation.getMesa().getNumeroMesa());
+        dto.setCapacidad(reservation.getMesa().getCapacidad());
+        dto.setZone(reservation.getMesa().getZone().getName());
+
+        dto.setFechaReservada(reservation.getFechaReservada());
+        dto.setHoraInicio(reservation.getHoraInicio());
+
+        return dto;
+    }
+
 }

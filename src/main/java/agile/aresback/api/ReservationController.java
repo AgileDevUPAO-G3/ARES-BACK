@@ -1,6 +1,7 @@
 package agile.aresback.api;
 
 import agile.aresback.dto.ReservationDTO;
+import agile.aresback.dto.ReservationListDTO;
 import agile.aresback.exception.ResourceNotFoundException;
 import agile.aresback.mapper.ReservationMapper;
 import agile.aresback.model.entity.Mesa;
@@ -61,6 +62,12 @@ public class ReservationController {
                 .map(reservationMapper::toDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(reservasDTO);
+    }
+
+    @GetMapping("/vista")
+    public ResponseEntity<List<ReservationListDTO>> getReservationsForView() {
+        List<ReservationListDTO> reservas = reservationService.getAllReservationsForView();
+        return ResponseEntity.ok(reservas);
     }
 
 
