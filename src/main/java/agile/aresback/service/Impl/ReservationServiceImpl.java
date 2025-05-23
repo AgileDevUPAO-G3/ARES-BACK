@@ -1,6 +1,7 @@
 package agile.aresback.service.Impl;
 
 import agile.aresback.dto.ReservationDTO;
+import agile.aresback.dto.ReservationListDTO;
 import agile.aresback.exception.ReservationConflictException;
 import agile.aresback.mapper.ReservationMapper;
 import agile.aresback.model.entity.Client;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationServiceImpl implements ReservationService {
@@ -86,6 +88,13 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<Reservation> getReservationsByTimeRange(LocalDate startDate, LocalDate endDate) {
         return reservationRepository.findByFechaReservadaBetween(startDate, endDate);
+    }
+
+    @Override
+    public List<ReservationListDTO> getAllReservationsForView() {
+        return reservationRepository.findAll().stream()
+                .map(reservationMapper::toListDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
