@@ -1,6 +1,7 @@
 package agile.aresback.service;
 
 import agile.aresback.dto.ReservationDTO;
+import agile.aresback.dto.ReservationListDTO;
 import agile.aresback.model.entity.Mesa;
 import agile.aresback.model.entity.Reservation;
 
@@ -17,6 +18,8 @@ public interface ReservationService {
     Reservation createReservationWithClient(ReservationDTO reservationDTO);
 
     List<Reservation> getReservationsByTimeRange(LocalDate startDate, LocalDate endDate);
+
+    List<ReservationListDTO> getAllReservationsForView();
 
     List<Reservation> findAll();
 
