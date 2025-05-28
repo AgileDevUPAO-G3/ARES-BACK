@@ -9,6 +9,7 @@ import agile.aresback.model.entity.Mesa;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Integer> {
 

@@ -1,6 +1,7 @@
 package agile.aresback.model.entity;
 
 import agile.aresback.model.enums.StateReservation;
+import agile.aresback.model.enums.StatusPago;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -34,6 +35,12 @@ public class Reservation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id", nullable = false)
     private Mesa mesa;
+
+    @Column(name = "status_pago")
+    private StatusPago statusPago;
+
+    @OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
+    private AppPayment appPayment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id",nullable = false)

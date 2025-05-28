@@ -1,11 +1,12 @@
 package agile.aresback.service.Impl;
 
-import agile.aresback.dto.PaymentDTO;
+import agile.aresback.dto.AppPaymentDTO;
 import agile.aresback.exception.PaymentException;
-import agile.aresback.mapper.PaymentMapper;
-import agile.aresback.model.entity.Payment;
-import agile.aresback.repository.PaymentRepository;
-import agile.aresback.service.PaymentService;
+import agile.aresback.mapper.AppPaymentMapper;
+import agile.aresback.model.entity.AppPayment;
+import agile.aresback.model.entity.Reservation;
+import agile.aresback.repository.AppPaymentRepository;
+import agile.aresback.service.AppPaymentService;
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.preference.PreferenceClient;
 import com.mercadopago.client.preference.PreferenceItemRequest;
@@ -19,37 +20,36 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-public class PaymentServiceImpl implements PaymentService {
+public class AppPaymentServiceImpl implements AppPaymentService {
 
-    private final PaymentRepository paymentRepository;
-    private final PaymentMapper paymentMapper;
+    private final AppPaymentRepository paymentRepository;
+    private final AppPaymentMapper paymentMapper;
 
     @Value("${mercadopago.access-token}")
     private String accessToken;
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, PaymentMapper paymentMapper) {
+    public AppPaymentServiceImpl(AppPaymentRepository paymentRepository, AppPaymentMapper paymentMapper) {
         this.paymentRepository = paymentRepository;
         this.paymentMapper = paymentMapper;
     }
 
     @Override
-    public PaymentDTO createPreference(PaymentDTO dto) {
-        // Validación básica
-        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+    public AppPaymentDTO createPreference(AppPaymentDTO dto, Reservation reservation) {
+        // Validación básica de datos de entrada
+        if (dto.getTitle() == null || dto.getTitle().isBlank())
             throw new PaymentException("El título del pago es obligatorio.");
-        }
-        if (dto.getQuantity() == null || dto.getQuantity() <= 0) {
+
+        if (dto.getQuantity() == null || dto.getQuantity() <= 0)
             throw new PaymentException("La cantidad debe ser mayor a cero.");
-        }
-        if (dto.getUnitPrice() == null || dto.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0) {
+
+        if (dto.getUnitPrice() == null || dto.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0)
             throw new PaymentException("El precio debe ser mayor a cero.");
-        }
-        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+
+        if (dto.getEmail() == null || dto.getEmail().isBlank())
             throw new PaymentException("El correo electrónico es obligatorio.");
-        }
 
         try {
-            // Configurar el SDK
+            // Configura Mercado Pago
             MercadoPagoConfig.setAccessToken(accessToken);
 
             // Crear ítem
@@ -57,11 +57,11 @@ public class PaymentServiceImpl implements PaymentService {
                     .title(dto.getTitle())
                     .description(dto.getDescription())
                     .quantity(dto.getQuantity())
-                    .unitPrice(dto.getUnitPrice()) // BigDecimal directo
+                    .unitPrice(dto.getUnitPrice())
                     .currencyId("PEN")
                     .build();
 
-            // Crear payer
+            // Crear comprador
             PreferencePayerRequest payer = PreferencePayerRequest.builder()
                     .email(dto.getEmail())
                     .build();
@@ -75,14 +75,16 @@ public class PaymentServiceImpl implements PaymentService {
             PreferenceClient client = new PreferenceClient();
             Preference preference = client.create(request);
 
-            // Guardar en BD
-            Payment payment = paymentMapper.toEntity(dto);
+            // Mapear DTO a entidad y completar datos
+            AppPayment payment = paymentMapper.toEntity(dto);
             payment.setPreferenceId(preference.getId());
             payment.setStatus("created");
+            payment.setReservation(reservation);
 
-            Payment saved = paymentRepository.save(payment);
+            // Guardar en base de datos
+            AppPayment saved = paymentRepository.save(payment);
 
-            // Devolver DTO incluyendo el initPoint (checkout URL)
+            // Devolver DTO con init_point
             return paymentMapper.toDTO(saved, preference.getInitPoint());
 
         } catch (Exception e) {

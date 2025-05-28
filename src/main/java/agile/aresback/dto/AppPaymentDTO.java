@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class PaymentDTO {
+public class AppPaymentDTO {
     private Long id;
     private String title;
     private String description;
@@ -16,5 +16,6 @@ public class PaymentDTO {
     private String preferenceId;
     private String status;
     private LocalDateTime createdAt;
-    private String initPoint; // ✅ Nuevo campo para redirección al checkout
+    private String initPoint;
+    private Integer reservationId;
 }

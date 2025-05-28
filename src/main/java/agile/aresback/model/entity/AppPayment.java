@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "pagos")
-public class Payment {
+public class AppPayment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,14 +36,18 @@ public class Payment {
     private String preferenceId;
 
     @Column(nullable = false)
-    private String status; // "created", "approved", "rejected", etc.
+    private String status;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reservation_id", unique = true, nullable = false)
+    private Reservation reservation;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.status = "created"; // Estado inicial
+        this.status = "created";
     }
 }

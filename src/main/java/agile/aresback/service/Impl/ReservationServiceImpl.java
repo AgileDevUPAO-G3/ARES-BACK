@@ -8,6 +8,7 @@ import agile.aresback.model.entity.Client;
 import agile.aresback.model.entity.Mesa;
 import agile.aresback.model.entity.Reservation;
 import agile.aresback.model.enums.StateReservation;
+import agile.aresback.model.enums.StatusPago;
 import agile.aresback.repository.ReservationRepository;
 import agile.aresback.service.ClientService;
 import agile.aresback.service.MesaService;
@@ -63,8 +64,7 @@ public class ReservationServiceImpl implements ReservationService {
         Mesa mesa = mesaService.findById(reservationDTO.getMesaId())
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
 
-        LocalDate fechaActual = LocalDate.now(); // ✅ separa fecha
-        LocalTime horaActual = LocalTime.now();  // ✅ separa hora
+        LocalDate fechaActual = LocalDate.now();
         LocalTime horaFinCalculada = reservationDTO.getHoraInicio().plusHours(2);
 
         List<Reservation> conflictos = reservationRepository.findConflictingReservations(
@@ -78,12 +78,16 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         Reservation reservation = reservationMapper.toEntity(reservationDTO, client, mesa);
-        reservation.setFechaRegistro(fechaActual);  // LocalDate
-        reservation.setHoraFin(horaFinCalculada);   // LocalTime
+        reservation.setFechaRegistro(fechaActual);
+        reservation.setHoraFin(horaFinCalculada);
         reservation.setStateReservation(StateReservation.EN_ESPERA);
+        reservation.setStatusPago(StatusPago.CREADO); // Estado inicial pago
+
+        // Nota: No asignamos Payment aquí. Se crea/actualiza después en el flujo de pago.
 
         return createReservation(reservation);
     }
+
 
     @Override
     public List<Reservation> getReservationsByTimeRange(LocalDate startDate, LocalDate endDate) {
