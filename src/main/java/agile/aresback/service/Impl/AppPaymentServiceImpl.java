@@ -5,90 +5,187 @@ import agile.aresback.exception.PaymentException;
 import agile.aresback.mapper.AppPaymentMapper;
 import agile.aresback.model.entity.AppPayment;
 import agile.aresback.model.entity.Reservation;
+import agile.aresback.model.enums.StateReservation;
+import agile.aresback.model.enums.StateReservationClient;
+import agile.aresback.model.enums.StatusPago;
 import agile.aresback.repository.AppPaymentRepository;
 import agile.aresback.service.AppPaymentService;
+import agile.aresback.service.ReservationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadopago.MercadoPagoConfig;
-import com.mercadopago.client.preference.PreferenceClient;
-import com.mercadopago.client.preference.PreferenceItemRequest;
-import com.mercadopago.client.preference.PreferencePayerRequest;
-import com.mercadopago.client.preference.PreferenceRequest;
+import com.mercadopago.client.preference.*;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.preference.Preference;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.resources.payment.Payment;
 
-import java.math.BigDecimal;
-import java.util.List;
+
+import java.util.Base64;
+import java.util.Collections;
 
 @Service
 public class AppPaymentServiceImpl implements AppPaymentService {
 
     private final AppPaymentRepository paymentRepository;
-    private final AppPaymentMapper paymentMapper;
+    private final ReservationService reservationService;
+    private final AppPaymentMapper appPaymentMapper;
+    private final ObjectMapper objectMapper;
 
-    @Value("${mercadopago.access-token}")
-    private String accessToken;
+    @Value("${mercadopago.access.token}")
+    private String mpAccessToken;
 
-    public AppPaymentServiceImpl(AppPaymentRepository paymentRepository, AppPaymentMapper paymentMapper) {
+    @Value("${backend.base.url}")
+    private String backendBaseUrl;
+
+    public AppPaymentServiceImpl(AppPaymentRepository paymentRepository,
+                                 ReservationService reservationService,
+                                 AppPaymentMapper appPaymentMapper,
+                                 ObjectMapper objectMapper) {
         this.paymentRepository = paymentRepository;
-        this.paymentMapper = paymentMapper;
+        this.reservationService = reservationService;
+        this.appPaymentMapper = appPaymentMapper;
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    public AppPaymentDTO createPreference(AppPaymentDTO dto, Reservation reservation) {
-        // Validación básica de datos de entrada
-        if (dto.getTitle() == null || dto.getTitle().isBlank())
-            throw new PaymentException("El título del pago es obligatorio.");
-
-        if (dto.getQuantity() == null || dto.getQuantity() <= 0)
-            throw new PaymentException("La cantidad debe ser mayor a cero.");
-
-        if (dto.getUnitPrice() == null || dto.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0)
-            throw new PaymentException("El precio debe ser mayor a cero.");
-
-        if (dto.getEmail() == null || dto.getEmail().isBlank())
-            throw new PaymentException("El correo electrónico es obligatorio.");
-
+    public AppPaymentDTO createPreference(AppPaymentDTO dto) {
         try {
-            // Configura Mercado Pago
-            MercadoPagoConfig.setAccessToken(accessToken);
+            MercadoPagoConfig.setAccessToken(mpAccessToken);
 
-            // Crear ítem
+            if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+                dto.setTitle("Reserva PACHA");
+            }
+
+            Integer reservationId = dto.getReservationDTO().getId();
+            String externalRef = encodeReservationIdToReference(reservationId);
+            dto.setExternalReference(externalRef);
+
             PreferenceItemRequest item = PreferenceItemRequest.builder()
                     .title(dto.getTitle())
-                    .description(dto.getDescription())
                     .quantity(dto.getQuantity())
                     .unitPrice(dto.getUnitPrice())
-                    .currencyId("PEN")
                     .build();
 
-            // Crear comprador
             PreferencePayerRequest payer = PreferencePayerRequest.builder()
                     .email(dto.getEmail())
                     .build();
 
-            // Crear preferencia
-            PreferenceRequest request = PreferenceRequest.builder()
-                    .items(List.of(item))
-                    .payer(payer)
+            PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
+                    .success("https://miweb.com/pago-exitoso")
+                    .pending("https://miweb.com/pago-pendiente")
+                    .failure("https://miweb.com/pago-fallido")
                     .build();
 
-            PreferenceClient client = new PreferenceClient();
-            Preference preference = client.create(request);
+            PreferenceRequest preferenceRequest = PreferenceRequest.builder()
+                    .items(Collections.singletonList(item))
+                    .payer(payer)
+                    .backUrls(backUrls)
+                    .notificationUrl(backendBaseUrl + "/api/v1/mercado-pago/webhook")
+                    .autoReturn("approved")
+                    .externalReference(externalRef)
+                    .build();
 
-            // Mapear DTO a entidad y completar datos
-            AppPayment payment = paymentMapper.toEntity(dto);
+            PreferenceClient preferenceClient = new PreferenceClient();
+            Preference preference = preferenceClient.create(preferenceRequest);
+
+            AppPayment payment = appPaymentMapper.toEntity(dto);
             payment.setPreferenceId(preference.getId());
-            payment.setStatus("created");
-            payment.setReservation(reservation);
+            payment.setStatusPago(StatusPago.CREADO);
+            payment.setExternalReference(externalRef);
 
-            // Guardar en base de datos
             AppPayment saved = paymentRepository.save(payment);
+            return appPaymentMapper.toDTO(saved);
 
-            // Devolver DTO con init_point
-            return paymentMapper.toDTO(saved, preference.getInitPoint());
-
+        } catch (MPApiException e) {
+            throw new PaymentException("Error de API al crear preferencia: " + e.getApiResponse().getContent());
+        } catch (MPException e) {
+            throw new PaymentException("Error al crear preferencia de pago: " + e.getMessage());
         } catch (Exception e) {
-            throw new PaymentException("Error al crear preferencia en Mercado Pago: " + e.getMessage());
+            throw new PaymentException("Error general al codificar el ID de reserva: " + e.getMessage());
         }
     }
+
+    @Override
+    public AppPaymentDTO findByPreferenceId(String preferenceId) {
+        AppPayment payment = paymentRepository.findAll().stream()
+                .filter(p -> preferenceId.equals(p.getPreferenceId()))
+                .findFirst()
+                .orElseThrow(() -> new PaymentException("No se encontró el pago con preferencia: " + preferenceId));
+        return appPaymentMapper.toDTO(payment);
+    }
+
+    @Override
+    public void linkReservationAfterPaymentApproved(String externalReference, Long paymentId) {
+        AppPayment payment = paymentRepository.findByExternalReference(externalReference)
+                .orElseThrow(() -> new PaymentException("No se encontró el pago con externalReference: " + externalReference));
+
+        if (payment.getReservation() == null) {
+            Integer reservationId;
+            try {
+                reservationId = decodeReferenceToReservationId(externalReference);
+            } catch (Exception e) {
+                throw new PaymentException("Error al decodificar el externalReference: " + e.getMessage());
+            }
+
+            Reservation reservation = reservationService.findById(reservationId)
+                    .orElseThrow(() -> new PaymentException("No se encontró la reserva temporal vinculada"));
+
+            if (reservation.getStateReservation() != StateReservation.ANULADA &&
+                    reservation.getStateReservation() != StateReservation.RESERVADA) {
+
+                reservation.setStateReservation(StateReservation.RESERVADA);
+                reservation.setStateReservationClient(StateReservationClient.EN_ESPERA);
+                payment.setReservation(reservation);
+                payment.setPaymentId(paymentId);
+                payment.setStatusPago(StatusPago.APROBADO);
+
+                reservationService.createReservation(reservation);
+                paymentRepository.save(payment);
+
+            } else {
+                throw new PaymentException("La reserva ya fue procesada o anulada.");
+            }
+        }
+    }
+
+    @Override
+    public AppPaymentDTO actualizarPago(AppPaymentDTO dto) {
+        AppPayment payment = paymentRepository.findById(dto.getId())
+                .orElseThrow(() -> new PaymentException("Pago no encontrado"));
+
+        StatusPago nuevoEstado = dto.getStatusPago(); // ya no necesitas valueOf()
+        payment.setStatusPago(nuevoEstado);
+
+        return appPaymentMapper.toDTO(paymentRepository.save(payment));
+    }
+
+    // ===================== UTILIDADES =====================
+
+    private String encodeReservationIdToReference(Integer reservationId) throws Exception {
+        return Base64.getEncoder().encodeToString(objectMapper.writeValueAsBytes(reservationId));
+    }
+
+    private Integer decodeReferenceToReservationId(String reference) throws Exception {
+        byte[] decoded = Base64.getDecoder().decode(reference);
+        return objectMapper.readValue(decoded, Integer.class);
+    }
+
+    @Override
+    public Payment consultarPagoEnMercadoPago(Long paymentId) {
+        try {
+            MercadoPagoConfig.setAccessToken(mpAccessToken);
+            PaymentClient client = new PaymentClient();
+            return client.get(paymentId);
+        } catch (MPApiException e) {
+            // Errores detallados provenientes del backend de MercadoPago
+            throw new PaymentException("Error de API al consultar el pago: " + e.getApiResponse().getContent());
+        } catch (MPException e) {
+            // Errores generales relacionados con la SDK o configuración
+            throw new PaymentException("Error general al consultar el pago en MercadoPago: " + e.getMessage());
+        }
+    }
+
 }

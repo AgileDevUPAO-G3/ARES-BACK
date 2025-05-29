@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface AppPaymentRepository extends JpaRepository<AppPayment, Long> {
-    Optional<AppPayment> findByPreferenceId(String preferenceId);
+    Optional<AppPayment> findByExternalReference(String externalReference);
 }

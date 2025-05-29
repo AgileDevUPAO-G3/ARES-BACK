@@ -6,13 +6,16 @@ import agile.aresback.exception.ReservationConflictException;
 import agile.aresback.mapper.ReservationMapper;
 import agile.aresback.model.entity.Client;
 import agile.aresback.model.entity.Mesa;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import agile.aresback.model.entity.Reservation;
 import agile.aresback.model.enums.StateReservation;
-import agile.aresback.model.enums.StatusPago;
+import agile.aresback.model.enums.StateReservationClient;
 import agile.aresback.repository.ReservationRepository;
 import agile.aresback.service.ClientService;
 import agile.aresback.service.MesaService;
 import agile.aresback.service.ReservationService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ReservationServiceImpl implements ReservationService {
+
+    private static final Logger log = LoggerFactory.getLogger(ReservationServiceImpl.class);
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -40,7 +45,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<Reservation> getReservationsForMesa(Mesa mesa) {
-        return reservationRepository.findByMesa(mesa); // Asegúrate de que este método exista en tu repositorio
+        return reservationRepository.findByMesa(mesa);
     }
 
     @Override
@@ -65,12 +70,20 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
 
         LocalDate fechaActual = LocalDate.now();
-        LocalTime horaFinCalculada = reservationDTO.getHoraInicio().plusHours(2);
+        LocalTime horaActual = LocalTime.now();
+        LocalTime horaInicio = reservationDTO.getHoraInicio();
+        LocalTime horaFinCalculada = horaInicio.plusHours(2);
+
+        // Validación: si la reserva es para hoy, debe hacerse con al menos 5h de anticipación
+        if (reservationDTO.getFechaReservada().isEqual(fechaActual)
+                && horaInicio.isBefore(horaActual.plusHours(5))) {
+            throw new ReservationConflictException("La reserva debe realizarse con al menos 5 horas de anticipación");
+        }
 
         List<Reservation> conflictos = reservationRepository.findConflictingReservations(
                 mesa.getId(),
                 reservationDTO.getFechaReservada(),
-                reservationDTO.getHoraInicio(),
+                horaInicio,
                 horaFinCalculada);
 
         if (!conflictos.isEmpty()) {
@@ -80,14 +93,11 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationMapper.toEntity(reservationDTO, client, mesa);
         reservation.setFechaRegistro(fechaActual);
         reservation.setHoraFin(horaFinCalculada);
-        reservation.setStateReservation(StateReservation.EN_ESPERA);
-        reservation.setStatusPago(StatusPago.CREADO); // Estado inicial pago
-
-        // Nota: No asignamos Payment aquí. Se crea/actualiza después en el flujo de pago.
+        reservation.setStateReservation(StateReservation.PENDIENTE); // Esperando pago
+        reservation.setStateReservationClient(StateReservationClient.EN_ESPERA); // Cliente aún no ha llegado
 
         return createReservation(reservation);
     }
-
 
     @Override
     public List<Reservation> getReservationsByTimeRange(LocalDate startDate, LocalDate endDate) {
@@ -115,4 +125,17 @@ public class ReservationServiceImpl implements ReservationService {
     public void deleteById(Integer id) {
         reservationRepository.deleteById(id);
     }
+
+    @Override
+    @Transactional
+    public void deleteExpiredPendingReservations() {
+        LocalDateTime limite = LocalDateTime.now().minusMinutes(10);
+        int eliminadas = reservationRepository.deleteExpiredReservations(StateReservation.PENDIENTE, limite);
+        if (eliminadas > 0) {
+            log.info("Se eliminaron automáticamente {} reservas pendientes por superar los 10 minutos sin pago.", eliminadas);
+        }
+    }
+
+
+
 }

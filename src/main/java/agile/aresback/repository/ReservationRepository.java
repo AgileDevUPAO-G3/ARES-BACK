@@ -1,15 +1,18 @@
 package agile.aresback.repository;
 
 import agile.aresback.model.entity.Reservation;
+import agile.aresback.model.enums.StateReservation;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import agile.aresback.model.entity.Mesa;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
+
 
 public interface ReservationRepository extends JpaRepository<Reservation, Integer> {
 
@@ -23,4 +26,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
                                                   @Param("fechaReservada") LocalDate fechaReservada,
                                                   @Param("horaInicio") LocalTime horaInicio,
                                                   @Param("horaFin") LocalTime horaFin);
+
+
+    @Modifying
+    @Query("DELETE FROM Reservation r WHERE r.stateReservation = :estado AND r.createdAt <= :limite")
+    int deleteExpiredReservations(@Param("estado") StateReservation estado, @Param("limite") LocalDateTime limite);
+
+
 }

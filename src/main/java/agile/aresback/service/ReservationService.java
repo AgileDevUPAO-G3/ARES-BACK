@@ -25,5 +25,8 @@ public interface ReservationService {
 
     Optional<Reservation> findById(Integer id);
 
+    void deleteExpiredPendingReservations();
+
     void deleteById(Integer id);
+
 }
