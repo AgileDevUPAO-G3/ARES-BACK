@@ -1,5 +1,6 @@
 package agile.aresback.model.entity;
 
+import agile.aresback.model.enums.StatusPago;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +21,6 @@ public class AppPayment {
     @Column(nullable = false)
     private String title;
 
-    @Column(length = 300)
-    private String description;
-
     @Column(nullable = false)
     private Integer quantity;
 
@@ -35,19 +33,25 @@ public class AppPayment {
     @Column(name = "preference_id", unique = true, nullable = false)
     private String preferenceId;
 
-    @Column(nullable = false)
-    private String status;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reservation_id", unique = true, nullable = false)
+    @Column(name = "external_reference", unique = true, length = 512)
+    private String externalReference;
+
+    @Column(name = "payment_id")
+    private Long paymentId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reservation_id")
     private Reservation reservation;
+
+    @Column(name = "status_pago")
+    private StatusPago statusPago;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.status = "created";
+        this.statusPago = StatusPago.CREADO;
     }
 }

@@ -1,11 +1,22 @@
 package agile.aresback.mapper;
 
 import agile.aresback.dto.AppPaymentDTO;
+import agile.aresback.dto.ReservationDTO;
 import agile.aresback.model.entity.AppPayment;
+import agile.aresback.model.enums.StatusPago;
+import agile.aresback.model.entity.Reservation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AppPaymentMapper {
+
+    private final ReservationMapper reservationMapper;
+
+    @Autowired
+    public AppPaymentMapper(ReservationMapper reservationMapper) {
+        this.reservationMapper = reservationMapper;
+    }
 
     public AppPaymentDTO toDTO(AppPayment entity) {
         if (entity == null) return null;
@@ -13,23 +24,20 @@ public class AppPaymentMapper {
         AppPaymentDTO dto = new AppPaymentDTO();
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
-        dto.setDescription(entity.getDescription());
         dto.setQuantity(entity.getQuantity());
         dto.setUnitPrice(entity.getUnitPrice());
         dto.setEmail(entity.getEmail());
         dto.setPreferenceId(entity.getPreferenceId());
-        dto.setStatus(entity.getStatus());
+        dto.setStatusPago(entity.getStatusPago());
         dto.setCreatedAt(entity.getCreatedAt());
-        dto.setInitPoint(null);
-        dto.setReservationId(entity.getReservation() != null ? entity.getReservation().getId() : null);
-        return dto;
-    }
+        dto.setExternalReference(entity.getExternalReference());
+        dto.setPaymentId(entity.getPaymentId());
 
-    public AppPaymentDTO toDTO(AppPayment entity, String initPoint) {
-        AppPaymentDTO dto = toDTO(entity);
-        if (dto != null) {
-            dto.setInitPoint(initPoint);
+        Reservation reservation = entity.getReservation();
+        if (reservation != null) {
+            dto.setReservationDTO(reservationMapper.toDTO(reservation));
         }
+
         return dto;
     }
 
@@ -38,10 +46,16 @@ public class AppPaymentMapper {
 
         AppPayment entity = new AppPayment();
         entity.setTitle(dto.getTitle());
-        entity.setDescription(dto.getDescription());
         entity.setQuantity(dto.getQuantity());
         entity.setUnitPrice(dto.getUnitPrice());
         entity.setEmail(dto.getEmail());
+        entity.setExternalReference(dto.getExternalReference());
+        entity.setPaymentId(dto.getPaymentId());
+
+        if (dto.getStatusPago() != null) {
+            entity.setStatusPago(dto.getStatusPago());
+        }
+
         return entity;
     }
 }
