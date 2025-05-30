@@ -33,9 +33,14 @@ public class AppPaymentMapper {
         dto.setExternalReference(entity.getExternalReference());
         dto.setPaymentId(entity.getPaymentId());
 
+        // ✅ Aquí va el valor correcto del reservationId
+        if (entity.getReservation() != null) {
+            dto.setReservationId(entity.getReservation().getId());
+        }
 
         return dto;
     }
+
 
     public AppPayment toEntity(AppPaymentDTO dto) {
         if (dto == null) return null;
@@ -54,4 +59,11 @@ public class AppPaymentMapper {
 
         return entity;
     }
+
+    public AppPayment toEntityWithReservation(AppPaymentDTO dto, Reservation reservation) {
+        AppPayment entity = toEntity(dto);
+        entity.setReservation(reservation);
+        return entity;
+    }
+
 }

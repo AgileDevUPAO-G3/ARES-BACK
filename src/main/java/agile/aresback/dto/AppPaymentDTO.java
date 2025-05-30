@@ -39,4 +39,6 @@ public class AppPaymentDTO {
 
     private Long paymentId;
 
+    private Integer reservationId; // 👈 Nuevo campo
+
 }

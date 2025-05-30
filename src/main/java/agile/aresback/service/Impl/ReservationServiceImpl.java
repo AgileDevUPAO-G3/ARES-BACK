@@ -130,12 +130,13 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public void deleteExpiredPendingReservations() {
-        LocalDateTime limite = LocalDateTime.now().minusMinutes(10);
+        LocalDateTime limite = LocalDateTime.now().minusMinutes(5); // antes eran 10
         int eliminadas = reservationRepository.deleteExpiredReservations(StateReservation.PENDIENTE, limite);
         if (eliminadas > 0) {
-            log.info("Se eliminaron automáticamente {} reservas pendientes por superar los 10 minutos sin pago.", eliminadas);
+            log.info("Se eliminaron automáticamente {} reservas pendientes por superar los 5 minutos sin pago.", eliminadas);
         }
     }
+
 
 
 

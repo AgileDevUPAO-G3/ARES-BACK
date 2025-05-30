@@ -59,7 +59,15 @@ public class AppPaymentServiceImpl implements AppPaymentService {
                 dto.setTitle("Reserva PACHA");
             }
 
-            // ✅ Usa directamente el externalReference enviado desde el frontend
+            // Validación: se requiere reservationId
+            if (dto.getReservationId() == null) {
+                throw new PaymentException("Debe proporcionar el ID de la reserva para vincular el pago.");
+            }
+
+            Reservation reservation = reservationService.findById(dto.getReservationId())
+                    .orElseThrow(() -> new PaymentException("No se encontró la reserva con el ID proporcionado."));
+
+            // Validación: el campo externalReference es obligatorio
             String externalRef = dto.getExternalReference();
             if (externalRef == null || externalRef.isBlank()) {
                 throw new PaymentException("El campo externalReference es obligatorio para vincular la reserva.");
@@ -93,7 +101,8 @@ public class AppPaymentServiceImpl implements AppPaymentService {
             PreferenceClient preferenceClient = new PreferenceClient();
             Preference preference = preferenceClient.create(preferenceRequest);
 
-            AppPayment payment = appPaymentMapper.toEntity(dto);
+            // Aquí se construye el pago con la reserva vinculada
+            AppPayment payment = appPaymentMapper.toEntityWithReservation(dto, reservation);
             payment.setPreferenceId(preference.getId());
             payment.setStatusPago(StatusPago.CREADO);
             payment.setExternalReference(externalRef);
@@ -109,6 +118,7 @@ public class AppPaymentServiceImpl implements AppPaymentService {
             throw new PaymentException("Error general al crear preferencia: " + e.getMessage());
         }
     }
+
 
 
     @Override
