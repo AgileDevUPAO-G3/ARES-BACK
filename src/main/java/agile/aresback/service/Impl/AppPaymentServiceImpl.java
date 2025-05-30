@@ -6,6 +6,7 @@ import agile.aresback.mapper.AppPaymentMapper;
 import agile.aresback.model.entity.AppPayment;
 import agile.aresback.model.entity.Reservation;
 import agile.aresback.model.enums.StateReservation;
+import lombok.extern.slf4j.Slf4j;
 import agile.aresback.model.enums.StateReservationClient;
 import agile.aresback.model.enums.StatusPago;
 import agile.aresback.repository.AppPaymentRepository;
@@ -14,6 +15,7 @@ import agile.aresback.service.ReservationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.preference.*;
+import java.util.List;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.preference.Preference;
@@ -21,11 +23,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.resources.payment.Payment;
-
-
 import java.util.Base64;
 import java.util.Collections;
 
+@Slf4j
 @Service
 public class AppPaymentServiceImpl implements AppPaymentService {
 
@@ -52,72 +53,66 @@ public class AppPaymentServiceImpl implements AppPaymentService {
 
     @Override
     public AppPaymentDTO createPreference(AppPaymentDTO dto) {
+        log.info("[PAGO] Iniciando creación de preferencia con DTO: {}", dto);
+
+        if (dto.getReservationId() == null) {
+            throw new PaymentException("Debe proporcionar el ID de la reserva para vincular el pago.");
+        }
+
+        Reservation reservation = reservationService.findById(dto.getReservationId())
+                .orElseThrow(() -> new PaymentException("No se encontró la reserva con el ID proporcionado."));
+
+        if (dto.getExternalReference() == null || dto.getExternalReference().isBlank()) {
+            throw new PaymentException("El campo externalReference es obligatorio para vincular la reserva.");
+        }
+
         try {
             MercadoPagoConfig.setAccessToken(mpAccessToken);
-
-            if (dto.getTitle() == null || dto.getTitle().isBlank()) {
-                dto.setTitle("Reserva PACHA");
-            }
-
-            // Validación: se requiere reservationId
-            if (dto.getReservationId() == null) {
-                throw new PaymentException("Debe proporcionar el ID de la reserva para vincular el pago.");
-            }
-
-            Reservation reservation = reservationService.findById(dto.getReservationId())
-                    .orElseThrow(() -> new PaymentException("No se encontró la reserva con el ID proporcionado."));
-
-            // Validación: el campo externalReference es obligatorio
-            String externalRef = dto.getExternalReference();
-            if (externalRef == null || externalRef.isBlank()) {
-                throw new PaymentException("El campo externalReference es obligatorio para vincular la reserva.");
-            }
 
             PreferenceItemRequest item = PreferenceItemRequest.builder()
                     .title(dto.getTitle())
                     .quantity(dto.getQuantity())
                     .unitPrice(dto.getUnitPrice())
+                    .currencyId("PEN")
                     .build();
 
             PreferencePayerRequest payer = PreferencePayerRequest.builder()
                     .email(dto.getEmail())
                     .build();
 
-            PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
-                    .success("https://miweb.com/pago-exitoso")
-                    .pending("https://miweb.com/pago-pendiente")
-                    .failure("https://miweb.com/pago-fallido")
-                    .build();
-
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
-                    .items(Collections.singletonList(item))
+                    .items(List.of(item))
                     .payer(payer)
-                    .backUrls(backUrls)
-                    .notificationUrl(backendBaseUrl + "/api/v1/mercado-pago/webhook")
-                    .autoReturn("approved")
-                    .externalReference(externalRef)
+                    .externalReference(dto.getExternalReference())
                     .build();
 
             PreferenceClient preferenceClient = new PreferenceClient();
             Preference preference = preferenceClient.create(preferenceRequest);
 
-            // Aquí se construye el pago con la reserva vinculada
             AppPayment payment = appPaymentMapper.toEntityWithReservation(dto, reservation);
             payment.setPreferenceId(preference.getId());
             payment.setStatusPago(StatusPago.CREADO);
-            payment.setExternalReference(externalRef);
+            payment.setExternalReference(dto.getExternalReference());
 
             AppPayment saved = paymentRepository.save(payment);
-            return appPaymentMapper.toDTO(saved);
+            AppPaymentDTO responseDTO = appPaymentMapper.toDTO(saved);
+
+            responseDTO.setInitPoint(preference.getInitPoint());
+
+            log.info("[PAGO] Preferencia creada correctamente con ID: {}", preference.getId());
+            return responseDTO;
 
         } catch (MPApiException e) {
-            throw new PaymentException("Error de API al crear preferencia: " + e.getApiResponse().getContent());
+            log.error("[PAGO] Error de API de MercadoPago: {}", e.getApiResponse().getContent());
+            throw new PaymentException("Error de API al crear la preferencia: " + e.getApiResponse().getContent());
         } catch (MPException e) {
-            throw new PaymentException("Error al crear preferencia de pago: " + e.getMessage());
-        } catch (Exception e) {
-            throw new PaymentException("Error general al crear preferencia: " + e.getMessage());
+            log.error("[PAGO] Error general de MercadoPago: {}", e.getMessage());
+            throw new PaymentException("Error general al crear la preferencia: " + e.getMessage());
         }
     }
+
+
+
 
 
 

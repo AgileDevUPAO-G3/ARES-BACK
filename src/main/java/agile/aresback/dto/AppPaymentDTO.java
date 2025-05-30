@@ -37,6 +37,8 @@ public class AppPaymentDTO {
 
     private String externalReference;
 
+    private String initPoint;
+
     private Long paymentId;
 
     private Integer reservationId; // 👈 Nuevo campo
