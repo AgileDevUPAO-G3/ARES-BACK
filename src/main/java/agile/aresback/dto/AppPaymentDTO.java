@@ -39,6 +39,4 @@ public class AppPaymentDTO {
 
     private Long paymentId;
 
-    @Valid
-    private ReservationDTO reservationDTO;
 }

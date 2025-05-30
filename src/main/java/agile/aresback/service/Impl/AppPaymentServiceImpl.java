@@ -59,9 +59,11 @@ public class AppPaymentServiceImpl implements AppPaymentService {
                 dto.setTitle("Reserva PACHA");
             }
 
-            Integer reservationId = dto.getReservationDTO().getId();
-            String externalRef = encodeReservationIdToReference(reservationId);
-            dto.setExternalReference(externalRef);
+            // ✅ Usa directamente el externalReference enviado desde el frontend
+            String externalRef = dto.getExternalReference();
+            if (externalRef == null || externalRef.isBlank()) {
+                throw new PaymentException("El campo externalReference es obligatorio para vincular la reserva.");
+            }
 
             PreferenceItemRequest item = PreferenceItemRequest.builder()
                     .title(dto.getTitle())
@@ -104,9 +106,10 @@ public class AppPaymentServiceImpl implements AppPaymentService {
         } catch (MPException e) {
             throw new PaymentException("Error al crear preferencia de pago: " + e.getMessage());
         } catch (Exception e) {
-            throw new PaymentException("Error general al codificar el ID de reserva: " + e.getMessage());
+            throw new PaymentException("Error general al crear preferencia: " + e.getMessage());
         }
     }
+
 
     @Override
     public AppPaymentDTO findByPreferenceId(String preferenceId) {
