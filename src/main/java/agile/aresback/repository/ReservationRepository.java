@@ -28,9 +28,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
                                                   @Param("horaFin") LocalTime horaFin);
 
 
-    @Modifying
-    @Query("DELETE FROM Reservation r WHERE r.stateReservation = :estado AND r.createdAt <= :limite")
-    int deleteExpiredReservations(@Param("estado") StateReservation estado, @Param("limite") LocalDateTime limite);
+    List<Reservation> findAllByStateReservationAndCreatedAtBefore(StateReservation estado, LocalDateTime limite);
 
 
 }

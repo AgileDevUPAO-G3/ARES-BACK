@@ -130,12 +130,19 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public void deleteExpiredPendingReservations() {
-        LocalDateTime limite = LocalDateTime.now().minusMinutes(5); // antes eran 10
-        int eliminadas = reservationRepository.deleteExpiredReservations(StateReservation.PENDIENTE, limite);
-        if (eliminadas > 0) {
-            log.info("Se eliminaron automáticamente {} reservas pendientes por superar los 5 minutos sin pago.", eliminadas);
+        LocalDateTime limite = LocalDateTime.now().minusMinutes(5);
+
+        List<Reservation> expiradas = reservationRepository.findAllByStateReservationAndCreatedAtBefore(
+                StateReservation.PENDIENTE, limite);
+
+        int cantidad = expiradas.size();
+
+        if (!expiradas.isEmpty()) {
+            reservationRepository.deleteAll(expiradas); // ✅ Hibernate aplica cascada
+            log.info("Se eliminaron automáticamente {} reservas pendientes por superar los 5 minutos sin pago.", cantidad);
         }
     }
+
 
 
 
