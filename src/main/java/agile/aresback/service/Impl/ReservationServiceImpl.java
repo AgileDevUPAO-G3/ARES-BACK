@@ -91,6 +91,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         Reservation reservation = reservationMapper.toEntity(reservationDTO, client, mesa);
+        reservation.setCreatedAt(LocalDateTime.now());
         reservation.setFechaRegistro(fechaActual);
         reservation.setHoraFin(horaFinCalculada);
         reservation.setStateReservation(StateReservation.PENDIENTE); // Esperando pago
