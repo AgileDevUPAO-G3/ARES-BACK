@@ -84,7 +84,9 @@ public class AppPaymentServiceImpl implements AppPaymentService {
                     .items(List.of(item))
                     .payer(payer)
                     .externalReference(dto.getExternalReference())
+                    .notificationUrl(backendBaseUrl + "/api/mercado-pago/webhook")
                     .build();
+
 
             PreferenceClient preferenceClient = new PreferenceClient();
             Preference preference = preferenceClient.create(preferenceRequest);
@@ -112,10 +114,6 @@ public class AppPaymentServiceImpl implements AppPaymentService {
     }
 
 
-
-
-
-
     @Override
     public AppPaymentDTO findByPreferenceId(String preferenceId) {
         AppPayment payment = paymentRepository.findAll().stream()
@@ -130,7 +128,8 @@ public class AppPaymentServiceImpl implements AppPaymentService {
         AppPayment payment = paymentRepository.findByExternalReference(externalReference)
                 .orElseThrow(() -> new PaymentException("No se encontró el pago con externalReference: " + externalReference));
 
-        if (payment.getReservation() == null) {
+        Reservation reservation = payment.getReservation();
+        if (reservation == null) {
             Integer reservationId;
             try {
                 reservationId = decodeReferenceToReservationId(externalReference);
@@ -138,26 +137,28 @@ public class AppPaymentServiceImpl implements AppPaymentService {
                 throw new PaymentException("Error al decodificar el externalReference: " + e.getMessage());
             }
 
-            Reservation reservation = reservationService.findById(reservationId)
+            reservation = reservationService.findById(reservationId)
                     .orElseThrow(() -> new PaymentException("No se encontró la reserva temporal vinculada"));
+            payment.setReservation(reservation);
+        }
 
-            if (reservation.getStateReservation() != StateReservation.ANULADA &&
-                    reservation.getStateReservation() != StateReservation.RESERVADA) {
+        if (reservation.getStateReservation() != StateReservation.ANULADA &&
+                reservation.getStateReservation() != StateReservation.RESERVADA) {
 
-                reservation.setStateReservation(StateReservation.RESERVADA);
-                reservation.setStateReservationClient(StateReservationClient.EN_ESPERA);
-                payment.setReservation(reservation);
-                payment.setPaymentId(paymentId);
-                payment.setStatusPago(StatusPago.APROBADO);
+            reservation.setStateReservation(StateReservation.RESERVADA);
+            reservation.setStateReservationClient(StateReservationClient.EN_ESPERA);
+            payment.setPaymentId(paymentId);
+            payment.setStatusPago(StatusPago.APROBADO);
 
-                reservationService.createReservation(reservation);
-                paymentRepository.save(payment);
+            reservationService.createReservation(reservation);
+            paymentRepository.save(payment);
 
-            } else {
-                throw new PaymentException("La reserva ya fue procesada o anulada.");
-            }
+            log.info("[CONFIRMACION MANUAL] Reserva actualizada y vinculada al pago correctamente.");
+        } else {
+            log.warn("[CONFIRMACION MANUAL] La reserva ya fue procesada o anulada.");
         }
     }
+
 
     @Override
     public AppPaymentDTO actualizarPago(AppPaymentDTO dto) {
@@ -195,5 +196,25 @@ public class AppPaymentServiceImpl implements AppPaymentService {
             throw new PaymentException("Error general al consultar el pago en MercadoPago: " + e.getMessage());
         }
     }
+
+    @Override
+    public void actualizarPagoDesdeWebhook(String paymentIdStr) {
+        try {
+            Long paymentId = Long.parseLong(paymentIdStr);
+            Payment pagoMp = consultarPagoEnMercadoPago(paymentId);
+
+            if ("approved".equalsIgnoreCase(pagoMp.getStatus())) {
+                String externalRef = pagoMp.getExternalReference();
+                log.info("[WEBHOOK] Pago aprobado recibido. externalReference: {}, paymentId: {}", externalRef, paymentId);
+
+                linkReservationAfterPaymentApproved(externalRef, paymentId);
+            } else {
+                log.info("[WEBHOOK] Pago recibido con estado no aprobado: {}", pagoMp.getStatus());
+            }
+        } catch (Exception e) {
+            log.error("[WEBHOOK] Error al procesar el webhook de pago: {}", e.getMessage());
+        }
+    }
+
 
 }
