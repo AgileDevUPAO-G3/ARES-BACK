@@ -42,6 +42,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<CustomErrorResponse> handlePaymentError(PaymentException ex, WebRequest request) {
+        CustomErrorResponse err = new CustomErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(err, HttpStatus.BAD_REQUEST);
+    }
+
+
+
     // Sobrescribir método para validaciones (optional pero recomendado)
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,

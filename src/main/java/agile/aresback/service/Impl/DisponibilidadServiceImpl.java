@@ -37,9 +37,9 @@ public class DisponibilidadServiceImpl implements DisponibilidadService {
                                     hora.isBefore(r.getHoraFin()) &&
                                     horaFin.isAfter(r.getHoraInicio()) &&
                                     (
-                                            r.getStateReservation() == StateReservation.EN_ESPERA ||
-                                                    r.getStateReservation() == StateReservation.EN_PROGRESO ||
-                                                    r.getStateReservation() == StateReservation.OCUPADA
+                                            r.getStateReservation() == StateReservation.PENDIENTE ||
+                                                    r.getStateReservation() == StateReservation.ANULADA ||
+                                                    r.getStateReservation() == StateReservation.RESERVADA
                                     )
                     );
 

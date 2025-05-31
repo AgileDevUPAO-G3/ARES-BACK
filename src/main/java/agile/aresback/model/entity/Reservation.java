@@ -1,11 +1,14 @@
 package agile.aresback.model.entity;
 
 import agile.aresback.model.enums.StateReservation;
+import agile.aresback.model.enums.StateReservationClient;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -30,6 +33,15 @@ public class Reservation {
 
     @Enumerated(EnumType.STRING)
     private StateReservation stateReservation;
+
+    @Enumerated(EnumType.STRING)
+    private StateReservationClient stateReservationClient;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AppPayment> pagos;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id", nullable = false)

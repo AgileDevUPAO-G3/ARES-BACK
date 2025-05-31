@@ -1,10 +1,15 @@
 package agile.aresback.dto;
 
+import agile.aresback.model.enums.StateReservation;
+import agile.aresback.model.enums.StateReservationClient;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,19 +22,22 @@ public class ReservationDTO {
     private Integer id;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private LocalDate fechaRegistro;  // Solo lectura, solo fecha (sin hora)
+    private LocalDate fechaRegistro;
 
     @NotNull(message = "La fecha reservada es obligatoria")
-    private LocalDate fechaReservada; // Mejor LocalDate para solo fecha
+    private LocalDate fechaReservada;
 
     @NotNull(message = "La hora de inicio es obligatoria")
     private LocalTime horaInicio;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private LocalTime horaFin;  // Solo lectura, calculado en backend
+    private LocalTime horaFin;
 
     @NotNull(message = "El estado de la reserva es obligatorio")
-    private String stateReservation = "EN_ESPERA";
+    private StateReservation stateReservation = StateReservation.PENDIENTE;
+
+    @NotNull(message = "El estado del cliente es obligatorio")
+    private StateReservationClient stateReservationClient = StateReservationClient.EN_ESPERA;
 
     @NotNull(message = "El ID de la mesa es obligatorio")
     private Integer mesaId;

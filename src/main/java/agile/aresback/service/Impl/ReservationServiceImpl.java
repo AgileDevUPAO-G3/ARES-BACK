@@ -6,12 +6,16 @@ import agile.aresback.exception.ReservationConflictException;
 import agile.aresback.mapper.ReservationMapper;
 import agile.aresback.model.entity.Client;
 import agile.aresback.model.entity.Mesa;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import agile.aresback.model.entity.Reservation;
 import agile.aresback.model.enums.StateReservation;
+import agile.aresback.model.enums.StateReservationClient;
 import agile.aresback.repository.ReservationRepository;
 import agile.aresback.service.ClientService;
 import agile.aresback.service.MesaService;
 import agile.aresback.service.ReservationService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +28,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ReservationServiceImpl implements ReservationService {
+
+    private static final Logger log = LoggerFactory.getLogger(ReservationServiceImpl.class);
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -39,7 +45,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<Reservation> getReservationsForMesa(Mesa mesa) {
-        return reservationRepository.findByMesa(mesa); // Asegúrate de que este método exista en tu repositorio
+        return reservationRepository.findByMesa(mesa);
     }
 
     @Override
@@ -63,14 +69,21 @@ public class ReservationServiceImpl implements ReservationService {
         Mesa mesa = mesaService.findById(reservationDTO.getMesaId())
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
 
-        LocalDate fechaActual = LocalDate.now(); // ✅ separa fecha
-        LocalTime horaActual = LocalTime.now();  // ✅ separa hora
-        LocalTime horaFinCalculada = reservationDTO.getHoraInicio().plusHours(2);
+        LocalDate fechaActual = LocalDate.now();
+        LocalTime horaActual = LocalTime.now();
+        LocalTime horaInicio = reservationDTO.getHoraInicio();
+        LocalTime horaFinCalculada = horaInicio.plusHours(2);
+
+        // Validación: si la reserva es para hoy, debe hacerse con al menos 5h de anticipación
+        if (reservationDTO.getFechaReservada().isEqual(fechaActual)
+                && horaInicio.isBefore(horaActual.plusHours(5))) {
+            throw new ReservationConflictException("La reserva debe realizarse con al menos 5 horas de anticipación");
+        }
 
         List<Reservation> conflictos = reservationRepository.findConflictingReservations(
                 mesa.getId(),
                 reservationDTO.getFechaReservada(),
-                reservationDTO.getHoraInicio(),
+                horaInicio,
                 horaFinCalculada);
 
         if (!conflictos.isEmpty()) {
@@ -78,9 +91,11 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         Reservation reservation = reservationMapper.toEntity(reservationDTO, client, mesa);
-        reservation.setFechaRegistro(fechaActual);  // LocalDate
-        reservation.setHoraFin(horaFinCalculada);   // LocalTime
-        reservation.setStateReservation(StateReservation.EN_ESPERA);
+        reservation.setCreatedAt(LocalDateTime.now());
+        reservation.setFechaRegistro(fechaActual);
+        reservation.setHoraFin(horaFinCalculada);
+        reservation.setStateReservation(StateReservation.PENDIENTE); // Esperando pago
+        reservation.setStateReservationClient(StateReservationClient.EN_ESPERA); // Cliente aún no ha llegado
 
         return createReservation(reservation);
     }
@@ -111,4 +126,25 @@ public class ReservationServiceImpl implements ReservationService {
     public void deleteById(Integer id) {
         reservationRepository.deleteById(id);
     }
+
+    @Override
+    @Transactional
+    public void deleteExpiredPendingReservations() {
+        LocalDateTime limite = LocalDateTime.now().minusMinutes(5);
+
+        List<Reservation> expiradas = reservationRepository.findAllByStateReservationAndCreatedAtBefore(
+                StateReservation.PENDIENTE, limite);
+
+        int cantidad = expiradas.size();
+
+        if (!expiradas.isEmpty()) {
+            reservationRepository.deleteAll(expiradas); // ✅ Hibernate aplica cascada
+            log.info("Se eliminaron automáticamente {} reservas pendientes por superar los 5 minutos sin pago.", cantidad);
+        }
+    }
+
+
+
+
+
 }

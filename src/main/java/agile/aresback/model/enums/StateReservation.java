@@ -2,10 +2,8 @@ package agile.aresback.model.enums;
 
 public enum StateReservation {
 
-    NO_ASISTIO,
-    EN_ESPERA,
-    ASISTIO,
-    EN_PROGRESO,
-    OCUPADA
+    ANULADA,    //quedo obsoleto, eliminar en un futuro
+    PENDIENTE,  //En proceso de registro de datos y esperando el pago
+    RESERVADA   //La reserva fue creada con exito
 
 }
