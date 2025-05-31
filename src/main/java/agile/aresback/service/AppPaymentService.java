@@ -15,4 +15,6 @@ public interface AppPaymentService {
     AppPaymentDTO actualizarPago(AppPaymentDTO dto) throws PaymentException;
 
     Payment consultarPagoEnMercadoPago(Long paymentId) throws PaymentException; // <- CORREGIDO Y EXPUESTO
+
+    void actualizarPagoDesdeWebhook(String paymentIdStr);
 }
