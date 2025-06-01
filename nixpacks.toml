@@ -3,3 +3,6 @@ nixpkgsArchive = "23.11"
 
 [variables]
 JAVA_VERSION = "21"
+
+[build]
+languages = ["java"]
