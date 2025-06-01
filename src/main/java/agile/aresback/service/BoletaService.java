@@ -1,55 +1,78 @@
 package agile.aresback.service;
 
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Paragraph;
+import com.lowagie.text.DocumentException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
-import jakarta.activation.DataSource;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.util.ByteArrayDataSource;
-import java.io.ByteArrayOutputStream;
+import agile.aresback.dto.ItemDTO;
+
+import java.io.*;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class BoletaService {
 
     @Autowired
-    private JavaMailSender javaMailSender;
+    private JavaMailSender mailSender;
 
-    public void generarYEnviarBoleta(String nombre, String correo, double monto) throws Exception {
 
-        // 1. Crear PDF temporal
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    public File generarBoletaPdf(String cliente, LocalDate fecha, List<ItemDTO> items, BigDecimal total)
+            throws IOException, DocumentException {
+        String htmlPath = "src/main/resources/templates/boleta.html";
+        String htmlContent = new String(Files.readAllBytes(Paths.get(htmlPath)));
 
-        PdfWriter writer = new PdfWriter(outputStream);
-        PdfDocument pdf = new PdfDocument(writer);
-        Document document = new Document(pdf);
+        String itemsHtml = construirTablaHtml(items);
 
-        document.add(new Paragraph("BOLETA DE PAGO"));
-        document.add(new Paragraph("Nombre: " + nombre));
-        document.add(new Paragraph("Monto: S/ " + monto));
-        document.add(new Paragraph("Fecha: " + LocalDate.now()));
+        htmlContent = htmlContent.replace("{{cliente}}", cliente)
+                .replace("{{fecha}}", fecha.toString())
+                .replace("{{items}}", itemsHtml)
+                .replace("{{total}}", total.toString());
 
-        document.close();
+        ITextRenderer renderer = new ITextRenderer();
+        renderer.setDocumentFromString(htmlContent);
+        renderer.layout();
 
-        // 2. Preparar correo con PDF adjunto
-        MimeMessage message = javaMailSender.createMimeMessage();
+        File outputFile = new File("boleta_" + cliente.replaceAll(" ", "_") + ".pdf");
+        OutputStream os = new FileOutputStream(outputFile);
+        renderer.createPDF(os);
+        os.close();
+
+        return outputFile;
+    }
+
+    public void enviarBoletaPorCorreo(File boletaPdf, String correoDestino)
+            throws MessagingException, IOException {
+        byte[] pdfBytes = Files.readAllBytes(boletaPdf.toPath());
+
+        MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setTo(correoDestino);
+        helper.setSubject("Tu boleta de compra");
+        helper.setText("Gracias por tu compra. Adjuntamos tu boleta.");
 
-        helper.setTo(correo);
-        helper.setSubject("Boleta de pago");
-        helper.setText("Estimado " + nombre + ",\nAdjunto su boleta de pago.");
+        helper.addAttachment("boleta.pdf", new ByteArrayResource(pdfBytes));
+        mailSender.send(message);
+    }
 
-        DataSource dataSource = new ByteArrayDataSource(outputStream.toByteArray(), "application/pdf");
-        helper.addAttachment("boleta_pago.pdf", dataSource);
-
-        // 3. Enviar correo
-        javaMailSender.send(message);
+    private String construirTablaHtml(List<ItemDTO> items) {
+        StringBuilder sb = new StringBuilder();
+        for (ItemDTO item : items) {
+            sb.append("<tr>")
+                    .append("<td>").append(item.getNombre()).append("</td>")
+                    .append("<td>").append(item.getCantidad()).append("</td>")
+                    .append("<td>").append(item.getPrecio()).append("</td>")
+                    .append("</tr>");
+        }
+        return sb.toString();
     }
 }
