@@ -14,7 +14,8 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // permite todas las rutas
-                        .allowedOrigins("http://localhost:4200") // permite Angular
+                        //.allowedOrigins("http://localhost:4200") // permite Angular
+                        .allowedOrigins("https://restaurante-pacha.netlify.app/")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // ajusta según tus endpoints
                         .allowedHeaders("*");
             }
