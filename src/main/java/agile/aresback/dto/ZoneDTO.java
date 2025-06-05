@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class ZoneDTO {
     private Integer id;
     private String name;
+    private Double price; // ✅ nuevo campo agregado
 }

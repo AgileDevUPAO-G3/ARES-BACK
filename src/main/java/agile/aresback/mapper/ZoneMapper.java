@@ -13,6 +13,7 @@ public class ZoneMapper {
         ZoneDTO dto = new ZoneDTO();
         dto.setId(zone.getId());
         dto.setName(zone.getName());
+        dto.setPrice(zone.getPrice()); // ✅ nuevo campo
         return dto;
     }
 
@@ -22,6 +23,7 @@ public class ZoneMapper {
         Zone zone = new Zone();
         zone.setId(dto.getId());
         zone.setName(dto.getName());
+        zone.setPrice(dto.getPrice()); // ✅ nuevo campo
         return zone;
     }
 }

@@ -1,6 +1,7 @@
 package agile.aresback.service.Impl;
 
 import agile.aresback.dto.MesaDto;
+import agile.aresback.mapper.MesaMapper;
 import agile.aresback.model.entity.Reservation;
 import agile.aresback.model.enums.StateReservation;
 import agile.aresback.model.enums.StateTable;
@@ -23,6 +24,9 @@ public class DisponibilidadServiceImpl implements DisponibilidadService {
     @Autowired
     private MesaRepository mesaRepository;
 
+    @Autowired
+    private MesaMapper mesaMapper;
+
     @Override
     public List<MesaDto> buscarMesasDisponibles(LocalDate fecha, LocalTime hora) {
         LocalTime horaFin = hora.plusHours(2);
@@ -33,23 +37,20 @@ public class DisponibilidadServiceImpl implements DisponibilidadService {
                 .map(mesa -> {
                     boolean ocupada = reservas.stream().anyMatch(r ->
                             r.getMesa().getId().equals(mesa.getId()) &&
-                                    r.getFechaReservada().equals(fecha) && // ✅ Corregido aquí
+                                    r.getFechaReservada().equals(fecha) &&
                                     hora.isBefore(r.getHoraFin()) &&
                                     horaFin.isAfter(r.getHoraInicio()) &&
                                     (
                                             r.getStateReservation() == StateReservation.PENDIENTE ||
-                                                    r.getStateReservation() == StateReservation.ANULADA ||
                                                     r.getStateReservation() == StateReservation.RESERVADA
                                     )
                     );
 
-                    return new MesaDto(
-                            mesa.getId(),
-                            mesa.getCapacidad(),
-                            (ocupada ? StateTable.RESERVADO : StateTable.DISPONIBLE).name(),
-                            mesa.getNumeroMesa(),
-                            mesa.getZone().getName()
-                    );
+                    // Mapea usando el mapper que ya tiene el precio incluido
+                    MesaDto dto = mesaMapper.toDTO(mesa);
+                    dto.setEstado(ocupada ? StateTable.RESERVADO.name() : StateTable.DISPONIBLE.name());
+
+                    return dto;
                 })
                 .toList();
     }

@@ -13,4 +13,5 @@ public class MesaDto {
     private String estado;
     private Integer numeroMesa;
     private String zoneName;
+    private Double precio; // nuevo campo agregado
 }

@@ -18,6 +18,7 @@ public class MesaMapper {
         dto.setEstado(mesa.getEstado().name()); // Enum a String
         dto.setNumeroMesa(mesa.getNumeroMesa());
         dto.setZoneName(mesa.getZone() != null ? mesa.getZone().getName() : null);
+        dto.setPrecio(mesa.getPrecio()); //
         return dto;
     }
 
@@ -30,6 +31,7 @@ public class MesaMapper {
         mesa.setEstado(StateTable.valueOf(dto.getEstado())); // String a Enum
         mesa.setNumeroMesa(dto.getNumeroMesa());
         mesa.setZone(zone);
+        // ⚠️ No se establece el precio manualmente: se calcula automáticamente en @PrePersist/@PreUpdate
         return mesa;
     }
 }
