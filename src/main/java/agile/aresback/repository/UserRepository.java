@@ -1,8 +1,6 @@
 package agile.aresback.repository;
 
 import agile.aresback.model.entity.User;
-
-import java.lang.foreign.Linker.Option;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
