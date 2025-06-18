@@ -29,6 +29,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
 
     List<Reservation> findAllByStateReservationAndCreatedAtBefore(StateReservation estado, LocalDateTime limite);
-
+    List<Reservation> filterReservations(String nombreCliente, String codigoReserva, LocalDate fecha, String horaInicio, String horaFin);
 
 }

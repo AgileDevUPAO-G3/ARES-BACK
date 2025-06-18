@@ -111,4 +111,19 @@ public class ReservationController {
         reservationService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<ReservationDTO>> filterReservations(
+            @RequestParam(required = false) String nombreCliente,
+            @RequestParam(required = false) String codigoReserva,
+            @RequestParam(required = false) LocalDate fecha,
+            @RequestParam(required = false) String horaInicio,
+            @RequestParam(required = false) String horaFin
+    ) {
+        List<Reservation> filtered = reservationService.filterReservations(nombreCliente, codigoReserva, fecha, horaInicio, horaFin);
+        List<ReservationDTO> result = filtered.stream()
+                .map(reservationMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
+    }
 }

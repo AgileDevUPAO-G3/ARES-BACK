@@ -143,6 +143,9 @@ public class ReservationServiceImpl implements ReservationService {
         }
     }
 
+    public List<Reservation> filterReservations(String nombreCliente, String codigoReserva, LocalDate fecha, String horaInicio, String horaFin) {
+        return reservationRepository.filterReservations(nombreCliente, codigoReserva, fecha, horaInicio, horaFin);
+    }
 
 
 

@@ -29,4 +29,5 @@ public interface ReservationService {
 
     void deleteById(Integer id);
 
+    List<Reservation> filterReservations(String nombreCliente, String codigoReserva, LocalDate fecha, String horaInicio, String horaFin);
 }
