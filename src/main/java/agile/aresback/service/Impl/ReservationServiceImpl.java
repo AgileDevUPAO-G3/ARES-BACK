@@ -18,6 +18,7 @@ import agile.aresback.service.ReservationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import agile.aresback.exception.ResourceNotFoundException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -143,8 +144,27 @@ public class ReservationServiceImpl implements ReservationService {
         }
     }
 
+    @Override
+    @Transactional
+    public Reservation confirmAttendance(Integer id) {
+        // Buscar la reserva por ID
+        Optional<Reservation> optionalReservation = reservationRepository.findById(id);
+        if (!optionalReservation.isPresent()) {
+            throw new ResourceNotFoundException("Reservation not found");
+        }
 
+        Reservation reservation = optionalReservation.get();
 
+        // Verificar si el estado actual es "EN_ESPERA"
+        if (reservation.getStateReservationClient() == StateReservationClient.EN_ESPERA) {
+            // Cambiar el estado a "ASISTIO"
+            reservation.setStateReservationClient(StateReservationClient.ASISTIO);
 
+            // Guardar la reserva actualizada
+            return reservationRepository.save(reservation);
+        }
 
+        // Si la reserva no está en "EN_ESPERA", lanzar una excepción
+        throw new IllegalStateException("The reservation has already been confirmed or is in a different state");
+    }
 }
