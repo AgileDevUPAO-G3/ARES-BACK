@@ -111,4 +111,13 @@ public class ReservationController {
         reservationService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+    @PutMapping("/{id}/confirm-attendance")
+    public ResponseEntity<ReservationDTO> confirmAttendance(@PathVariable Integer id) {
+        // Llamar al servicio para confirmar la asistencia
+        Reservation updatedReservation = reservationService.confirmAttendance(id);
+
+        // Retornar la reserva actualizada como un DTO
+        return ResponseEntity.ok(reservationMapper.toDTO(updatedReservation));
+    }
+
 }
