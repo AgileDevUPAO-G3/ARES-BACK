@@ -24,16 +24,16 @@ public class DisponibilidadServiceImpl implements DisponibilidadService {
     private MesaRepository mesaRepository;
 
     @Override
-    public List<MesaDto> buscarMesasDisponibles(LocalDate fecha, LocalTime hora) {
+    public List<MesaDto> buscarMesasDisponibles(LocalDate fecha, LocalTime hora, Integer capacidadSolicitada) {
         LocalTime horaFin = hora.plusHours(2);
-
         List<Reservation> reservas = reservationRepository.findAll();
 
         return mesaRepository.findAll().stream()
+                .filter(m -> capacidadSolicitada == null || m.getCapacidad() == capacidadSolicitada) // ✅ filtro opcional
                 .map(mesa -> {
                     boolean ocupada = reservas.stream().anyMatch(r ->
                             r.getMesa().getId().equals(mesa.getId()) &&
-                                    r.getFechaReservada().equals(fecha) && // ✅ Corregido aquí
+                                    r.getFechaReservada().equals(fecha) &&
                                     hora.isBefore(r.getHoraFin()) &&
                                     horaFin.isAfter(r.getHoraInicio()) &&
                                     (
@@ -53,4 +53,5 @@ public class DisponibilidadServiceImpl implements DisponibilidadService {
                 })
                 .toList();
     }
+
 }
