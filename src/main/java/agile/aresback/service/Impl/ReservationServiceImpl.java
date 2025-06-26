@@ -165,7 +165,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         // Si la reserva no está en "EN_ESPERA", lanzar una excepción
-        throw new IllegalStateException("The reservation has already been confirmed or is in a different state");
+        throw new IllegalStateException("ERROR: El tiempo limite de espera de esta reservafue exedido");
     }
 
     @Override

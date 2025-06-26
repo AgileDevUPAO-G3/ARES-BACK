@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-
+import agile.aresback.model.enums.StateReservationClient; // asegúrate de importar
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -37,6 +37,9 @@ public class ReservationListDTO {
 
     @NotNull(message = "La fecha reservada es requerida")
     private LocalDate fechaReservada;
+
+    @NotNull(message = "El estado del cliente es requerido")
+    private StateReservationClient stateReservationClient;
 
     @NotNull(message = "La hora de reserva es requerida")
     private LocalTime horaInicio;

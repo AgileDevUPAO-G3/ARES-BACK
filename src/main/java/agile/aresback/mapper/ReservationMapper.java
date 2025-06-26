@@ -74,6 +74,7 @@ public class ReservationMapper {
         dto.setZone(reservation.getMesa().getZone().getName());
         dto.setFechaReservada(reservation.getFechaReservada());
         dto.setHoraInicio(reservation.getHoraInicio());
+        dto.setStateReservationClient(reservation.getStateReservationClient());
 
         return dto;
     }

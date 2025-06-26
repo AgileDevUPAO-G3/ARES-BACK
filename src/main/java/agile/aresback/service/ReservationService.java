@@ -33,8 +33,6 @@ public interface ReservationService {
 
     List<ReservationListDTO> searchReservationsByNombreODni(String filtro);
 
-
-
     void markNoShowReservations();
 
 
