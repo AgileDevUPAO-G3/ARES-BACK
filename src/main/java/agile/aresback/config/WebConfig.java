@@ -15,12 +15,14 @@ public class WebConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                                "http://localhost:4200",  // Origen del frontend local
-                                "https://restaurante-pacha.netlify.app/",  // Origen del frontend desplegado en Netlify
-                                "https://reasonable-elora-angeloncoy-239208a7.koyeb.app/"  // Agregar tu dominio de backend aquí
-                        )
+                                "http://localhost:4200", // Origen del frontend local
+                                "https://restaurante-pacha.netlify.app/", // Origen del frontend desplegado en Netlify
+                                "https://reasonable-elora-angeloncoy-239208a7.koyeb.app/" // Agregar tu dominio de
+                                                                                          // backend aquí
+                )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(true); // Permitir credenciales si es necesario
             }
         };
     }
