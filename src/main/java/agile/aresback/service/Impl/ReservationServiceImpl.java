@@ -165,6 +165,36 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         // Si la reserva no está en "EN_ESPERA", lanzar una excepción
-        throw new IllegalStateException("The reservation has already been confirmed or is in a different state");
+        throw new IllegalStateException("ERROR: El tiempo limite de espera de esta reservafue exedido");
     }
+
+    @Override
+    @Transactional
+    public void markNoShowReservations() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Reservation> pendingReservations = reservationRepository.findAllByStateReservationClient(StateReservationClient.EN_ESPERA);
+
+        for (Reservation reservation : pendingReservations) {
+            LocalDateTime reservationTime = LocalDateTime.of(reservation.getFechaReservada(), reservation.getHoraInicio());
+
+            // Usa 2 minutos para pruebas (puedes cambiar a 15 luego)
+            if (now.isAfter(reservationTime.plusMinutes(2))) {
+                reservation.setStateReservationClient(StateReservationClient.NO_ASISTIO);
+                reservationRepository.save(reservation);
+                log.info("Reserva ID {} marcada como NO ASISTIÓ automáticamente", reservation.getId());
+            }
+        }
+    }
+
+
+
+    @Override
+    public List<ReservationListDTO> searchReservationsByNombreODni(String filtro) {
+        List<Reservation> resultados = reservationRepository.searchByNombreODni(filtro);
+        return resultados.stream()
+                .map(reservationMapper::toListDTO)
+                .collect(Collectors.toList());
+    }
+
 }

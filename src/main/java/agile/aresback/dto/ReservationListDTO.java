@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-
+import agile.aresback.model.enums.StateReservationClient; // asegúrate de importar
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -19,12 +19,16 @@ public class ReservationListDTO {
     @Size(max = 100, message = "El nombre completo no puede exceder los 100 caracteres")
     private String nombreCliente;
 
+    @NotBlank(message = "El DNI es requerido")
+    @Size(max = 15, message = "El DNI no puede exceder los 15 caracteres")
+    private String dniCliente;
+
     @NotNull(message = "El número de mesa es requerido")
     @Positive(message = "El número de mesa debe ser positivo")
     private Integer numeroMesa;
 
-    @NotNull(message = "La cantidad de personas es requerida")
-    @Positive(message = "La cantidad de personas debe ser positiva")
+    @NotNull(message = "La capacidad es requerida")
+    @Positive(message = "La capacidad debe ser positiva")
     private Integer capacidad;
 
     @NotBlank(message = "La zona es requerida")
@@ -33,6 +37,9 @@ public class ReservationListDTO {
 
     @NotNull(message = "La fecha reservada es requerida")
     private LocalDate fechaReservada;
+
+    @NotNull(message = "El estado del cliente es requerido")
+    private StateReservationClient stateReservationClient;
 
     @NotNull(message = "La hora de reserva es requerida")
     private LocalTime horaInicio;
