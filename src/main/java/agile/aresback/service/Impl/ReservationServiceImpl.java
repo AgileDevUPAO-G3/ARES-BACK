@@ -77,8 +77,8 @@ public class ReservationServiceImpl implements ReservationService {
 
         // Validación: si la reserva es para hoy, debe hacerse con al menos 5h de anticipación
         if (reservationDTO.getFechaReservada().isEqual(fechaActual)
-                && horaInicio.isBefore(horaActual.plusHours(5))) {
-            throw new ReservationConflictException("La reserva debe realizarse con al menos 5 horas de anticipación");
+                && horaInicio.isBefore(horaActual.plusHours(3))) {
+            throw new ReservationConflictException("La reserva debe realizarse con al menos 3 horas de anticipación");
         }
 
         List<Reservation> conflictos = reservationRepository.findConflictingReservations(
@@ -179,7 +179,7 @@ public class ReservationServiceImpl implements ReservationService {
             LocalDateTime reservationTime = LocalDateTime.of(reservation.getFechaReservada(), reservation.getHoraInicio());
 
             // Usa 2 minutos para pruebas (puedes cambiar a 15 luego)
-            if (now.isAfter(reservationTime.plusMinutes(2))) {
+            if (now.isAfter(reservationTime.plusMinutes(15))) {
                 reservation.setStateReservationClient(StateReservationClient.NO_ASISTIO);
                 reservationRepository.save(reservation);
                 log.info("Reserva ID {} marcada como NO ASISTIÓ automáticamente", reservation.getId());
