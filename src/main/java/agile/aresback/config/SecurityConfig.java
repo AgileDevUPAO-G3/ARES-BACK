@@ -31,7 +31,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints públicos
                         .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/disponibilidad").permitAll()
                         .requestMatchers("/api/disponibilidad/**").permitAll()
                         .requestMatchers("/api/clients/byDni/**").permitAll()
                         .requestMatchers("/api/reservations/**").permitAll() // POST crear reserva
