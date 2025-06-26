@@ -31,25 +31,34 @@ public class DisponibilidadServiceImpl implements DisponibilidadService {
         return mesaRepository.findAll().stream()
                 .filter(m -> capacidadSolicitada == null || m.getCapacidad() == capacidadSolicitada) // ✅ filtro opcional
                 .map(mesa -> {
-                    boolean ocupada = reservas.stream().anyMatch(r ->
-                            r.getMesa().getId().equals(mesa.getId()) &&
-                                    r.getFechaReservada().equals(fecha) &&
-                                    hora.isBefore(r.getHoraFin()) &&
-                                    horaFin.isAfter(r.getHoraInicio()) &&
-                                    (
-                                            r.getStateReservation() == StateReservation.PENDIENTE ||
-                                                    r.getStateReservation() == StateReservation.ANULADA ||
-                                                    r.getStateReservation() == StateReservation.RESERVADA
-                                    )
-                    );
+                    String estadoMesa = StateTable.DISPONIBLE.name();
+
+                    for (Reservation r : reservas) {
+                        if (
+                                r.getMesa().getId().equals(mesa.getId()) &&
+                                        r.getFechaReservada().equals(fecha) &&
+                                        hora.isBefore(r.getHoraFin()) &&
+                                        horaFin.isAfter(r.getHoraInicio())
+                        ) {
+                            if (r.getStateReservation() == StateReservation.PENDIENTE) {
+                                estadoMesa = StateReservation.PENDIENTE.name(); // "PENDIENTE"
+                                break;
+                            } else if (r.getStateReservation() == StateReservation.RESERVADA) {
+                                estadoMesa = StateTable.RESERVADO.name(); // "RESERVADO"
+                                break;
+                            }
+                            // ⚠️ ANULADA no afecta
+                        }
+                    }
 
                     return new MesaDto(
                             mesa.getId(),
                             mesa.getCapacidad(),
-                            (ocupada ? StateTable.RESERVADO : StateTable.DISPONIBLE).name(),
+                            estadoMesa,
                             mesa.getNumeroMesa(),
                             mesa.getZone().getName()
                     );
+
                 })
                 .toList();
     }

@@ -22,5 +22,14 @@ public class SchedulerConfig {
         log.info("Iniciando limpieza automática de reservas expiradas...");
         reservationService.deleteExpiredPendingReservations();
     }
+    /**
+     * Marca automáticamente como NO ASISTIÓ a los que no llegaron después de 2 minutos.
+     */
+    @Scheduled(fixedRate = 60000) // cada 1 minuto
+    public void marcarAsistenciasNoConfirmadas() {
+        log.info("⏱️ Verificando reservas EN_ESPERA que no llegaron...");
+        reservationService.markNoShowReservations();
+    }
+
 
 }
