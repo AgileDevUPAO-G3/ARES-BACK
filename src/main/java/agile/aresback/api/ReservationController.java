@@ -120,4 +120,9 @@ public class ReservationController {
         return ResponseEntity.ok(reservationMapper.toDTO(updatedReservation));
     }
 
+    @GetMapping("/buscar")
+    public ResponseEntity<List<ReservationListDTO>> buscarPorNombreODni(@RequestParam("filtro") String filtro) {
+        return ResponseEntity.ok(reservationService.searchReservationsByNombreODni(filtro));
+    }
+
 }

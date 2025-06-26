@@ -31,6 +31,10 @@ public interface ReservationService {
 
     Reservation confirmAttendance(Integer id);
 
+    List<ReservationListDTO> searchReservationsByNombreODni(String filtro);
+
+
+
     void markNoShowReservations();
 
 

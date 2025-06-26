@@ -189,4 +189,12 @@ public class ReservationServiceImpl implements ReservationService {
 
 
 
+    @Override
+    public List<ReservationListDTO> searchReservationsByNombreODni(String filtro) {
+        List<Reservation> resultados = reservationRepository.searchByNombreODni(filtro);
+        return resultados.stream()
+                .map(reservationMapper::toListDTO)
+                .collect(Collectors.toList());
+    }
+
 }
