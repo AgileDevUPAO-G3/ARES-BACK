@@ -129,35 +129,34 @@ public class AppPaymentServiceImpl implements AppPaymentService {
                 .orElseThrow(() -> new PaymentException("No se encontró el pago con externalReference: " + externalReference));
 
         Reservation reservation = payment.getReservation();
+
         if (reservation == null) {
-            Integer reservationId;
             try {
-                reservationId = decodeReferenceToReservationId(externalReference);
+                Integer reservationId = decodeReferenceToReservationId(externalReference);
+                reservation = reservationService.findById(reservationId)
+                        .orElseThrow(() -> new PaymentException("No se encontró la reserva con ID decodificado"));
+                payment.setReservation(reservation);
             } catch (Exception e) {
                 throw new PaymentException("Error al decodificar el externalReference: " + e.getMessage());
             }
-
-            reservation = reservationService.findById(reservationId)
-                    .orElseThrow(() -> new PaymentException("No se encontró la reserva temporal vinculada"));
-            payment.setReservation(reservation);
         }
 
+        // Actualizar estado solo si está pendiente o nuevo
         if (reservation.getStateReservation() != StateReservation.ANULADA &&
                 reservation.getStateReservation() != StateReservation.RESERVADA) {
 
             reservation.setStateReservation(StateReservation.RESERVADA);
             reservation.setStateReservationClient(StateReservationClient.EN_ESPERA);
-            payment.setPaymentId(paymentId);
-            payment.setStatusPago(StatusPago.APROBADO);
-
             reservationService.createReservation(reservation);
-            paymentRepository.save(payment);
-
-            log.info("[CONFIRMACION MANUAL] Reserva actualizada y vinculada al pago correctamente.");
-        } else {
-            log.warn("[CONFIRMACION MANUAL] La reserva ya fue procesada o anulada.");
         }
+
+        payment.setPaymentId(paymentId);
+        payment.setStatusPago(StatusPago.APROBADO);
+        paymentRepository.save(payment);
+
+        log.info("[WEBHOOK] Pago vinculado y reserva actualizada correctamente.");
     }
+
 
 
     @Override
@@ -215,6 +214,5 @@ public class AppPaymentServiceImpl implements AppPaymentService {
             log.error("[WEBHOOK] Error al procesar el webhook de pago: {}", e.getMessage());
         }
     }
-
 
 }
