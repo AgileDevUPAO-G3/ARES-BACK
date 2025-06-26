@@ -70,6 +70,38 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
+<<<<<<< HEAD
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itext7-core</artifactId>
+            <version>8.0.1</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>1.0.10</version>
+        </dependency>
+        <!-- Flying Saucer PDF generation -->
+        <dependency>
+            <groupId>org.xhtmlrenderer</groupId>
+            <artifactId>flying-saucer-pdf</artifactId>
+            <version>9.1.20</version>
+        </dependency>
+        <!-- Java Activation Framework -->
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <version>2.0.1</version> <!-- o 2.0.1 si la anterior no descarga -->
+=======
             <groupId>com.mercadopago</groupId>
             <artifactId>sdk-java</artifactId>
             <version>2.4.0</version>
@@ -82,6 +114,7 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
+>>>>>>> 5a0da2d6ae15e36f23c4c1137a8c486a20d390ff
         </dependency>
     
       <dependency>

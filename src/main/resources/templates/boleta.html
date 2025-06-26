@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .datos {
+            margin-bottom: 20px;
+        }
+
+        .datos p {
+            margin: 5px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f39c12;
+            color: white;
+            text-align: left;
+        }
+
+        .total {
+            text-align: right;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+<h1>BOLETA DE VENTA</h1>
+
+<div class="datos">
+    <p><strong>Cliente:</strong> {{cliente}}</p>
+    <p><strong>Fecha:</strong> {{fecha}}</p>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio (S/)</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{items}}
+    </tbody>
+</table>
+
+<div class="total">
+    <p><strong>Total:</strong> S/ {{total}}</p>
+</div>
+
+<div class="footer">
+    Gracias por su preferencia - Restaurante PACHA
+</div>
+
+</body>
+</html>
