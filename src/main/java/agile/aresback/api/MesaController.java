@@ -6,7 +6,9 @@ import agile.aresback.model.entity.Mesa;
 import agile.aresback.model.entity.Zone;
 import agile.aresback.service.MesaService;
 import agile.aresback.service.ZoneService;
+import agile.aresback.dto.EstadoMesaDTO;
 
+import org.apache.velocity.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tables")
@@ -46,28 +49,39 @@ public class MesaController {
         return mesaMapper.toDTO(mesa);
     }
 
-    /*@PostMapping
-    public MesaDto createMesa(@RequestBody MesaDto mesaDto) {
-        Zone zone = zoneService.findById(mesaDto.getZoneId())
-                .orElseThrow(() -> new RuntimeException("Zona no encontrada"));
-        Mesa mesa = mesaMapper.toEntity(mesaDto, zone);
-        Mesa saved = mesaService.save(mesa);
-        return mesaMapper.toDTO(saved);
-    }
+    /*
+     * @PostMapping
+     * public MesaDto createMesa(@RequestBody MesaDto mesaDto) {
+     * Zone zone = zoneService.findById(mesaDto.getZoneId())
+     * .orElseThrow(() -> new RuntimeException("Zona no encontrada"));
+     * Mesa mesa = mesaMapper.toEntity(mesaDto, zone);
+     * Mesa saved = mesaService.save(mesa);
+     * return mesaMapper.toDTO(saved);
+     * }
+     * 
+     * @PutMapping("/{id}")
+     * public MesaDto updateMesa(@PathVariable Integer id, @RequestBody MesaDto
+     * mesaDto) {
+     * Zone zone = zoneService.findById(mesaDto.getZoneId())
+     * .orElseThrow(() -> new RuntimeException("Zona no encontrada"));
+     * Mesa mesa = mesaMapper.toEntity(mesaDto, zone);
+     * mesa.setId(id);
+     * Mesa updated = mesaService.save(mesa);
+     * return mesaMapper.toDTO(updated);
+     * }
+     * 
+     * @DeleteMapping("/{id}")
+     * public void deleteMesa(@PathVariable Integer id) {
+     * mesaService.deleteById(id);
+     * }
+     */
 
-    @PutMapping("/{id}")
-    public MesaDto updateMesa(@PathVariable Integer id, @RequestBody MesaDto mesaDto) {
-        Zone zone = zoneService.findById(mesaDto.getZoneId())
-                .orElseThrow(() -> new RuntimeException("Zona no encontrada"));
-        Mesa mesa = mesaMapper.toEntity(mesaDto, zone);
-        mesa.setId(id);
-        Mesa updated = mesaService.save(mesa);
-        return mesaMapper.toDTO(updated);
+    @PutMapping("/{id}/estado")
+    public ResponseEntity<Void> actualizarEstadoMesa(
+            @PathVariable Integer id,
+            @RequestBody EstadoMesaDTO estadoMesaDto) {
+        mesaService.cambiarEstado(id, estadoMesaDto.getNuevoEstado());
+        return ResponseEntity.ok().build();
     }
-
-    @DeleteMapping("/{id}")
-    public void deleteMesa(@PathVariable Integer id) {
-        mesaService.deleteById(id);
-    }*/
 
 }
