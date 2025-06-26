@@ -64,7 +64,11 @@ public class ReservationMapper {
 
         ReservationListDTO dto = new ReservationListDTO();
         dto.setId(reservation.getId());
-        dto.setNombreCliente(reservation.getClient().getApellido() + " " + reservation.getClient().getNombre());
+
+        Client client = reservation.getClient();
+        dto.setNombreCliente(client.getApellido() + " " + client.getNombre());
+        dto.setDniCliente(client.getDni());
+
         dto.setNumeroMesa(reservation.getMesa().getNumeroMesa());
         dto.setCapacidad(reservation.getMesa().getCapacidad());
         dto.setZone(reservation.getMesa().getZone().getName());
@@ -73,4 +77,5 @@ public class ReservationMapper {
 
         return dto;
     }
+
 }

@@ -30,5 +30,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
     List<Reservation> findAllByStateReservationAndCreatedAtBefore(StateReservation estado, LocalDateTime limite);
 
+    @Query("""
+    SELECT r FROM Reservation r
+    WHERE 
+        (:filtro IS NULL OR LOWER(CONCAT(r.client.nombre, ' ', r.client.apellido)) LIKE LOWER(CONCAT('%', :filtro, '%')) 
+        OR LOWER(CONCAT(r.client.apellido, ' ', r.client.nombre)) LIKE LOWER(CONCAT('%', :filtro, '%'))
+        OR r.client.dni LIKE CONCAT('%', :filtro, '%'))
+    ORDER BY r.fechaReservada DESC, r.horaInicio DESC
+""")
+    List<Reservation> searchByNombreODni(@Param("filtro") String filtro);
 
 }

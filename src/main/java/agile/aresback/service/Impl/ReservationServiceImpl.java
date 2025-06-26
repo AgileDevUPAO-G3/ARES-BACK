@@ -167,4 +167,12 @@ public class ReservationServiceImpl implements ReservationService {
         // Si la reserva no está en "EN_ESPERA", lanzar una excepción
         throw new IllegalStateException("The reservation has already been confirmed or is in a different state");
     }
+    @Override
+    public List<ReservationListDTO> searchReservationsByNombreODni(String filtro) {
+        List<Reservation> resultados = reservationRepository.searchByNombreODni(filtro);
+        return resultados.stream()
+                .map(reservationMapper::toListDTO)
+                .collect(Collectors.toList());
+    }
+
 }
