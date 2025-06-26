@@ -11,4 +11,5 @@ import java.time.LocalTime;
 public class DisponibilidadDto {
     private LocalDate fecha;
     private LocalTime hora;
+    private Integer capacidadSolicitada;
 }

@@ -20,12 +20,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/disponibilidad").permitAll()
                         .requestMatchers("/api/disponibilidad/**").permitAll()
                         .requestMatchers("/api/clients/byDni/**").permitAll()
-                        .requestMatchers("/api/reservations").permitAll() // POST crear reserva
+                        .requestMatchers("/api/reservations/**").permitAll() // POST crear reserva
                         .requestMatchers("/api/mercado-pago/**").permitAll()
 
                         // Endpoints privados (requieren login)
                         .requestMatchers("/api/clients/**").authenticated()
-                        .requestMatchers("/api/reservations/**").authenticated() // el resto de reservations
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/zones/**").authenticated()
                         .requestMatchers("/api/tables/**").authenticated()
