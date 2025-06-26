@@ -70,7 +70,11 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-<<<<<<< HEAD
+            <groupId>com.mercadopago</groupId>
+            <artifactId>sdk-java</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itext7-core</artifactId>
             <version>8.0.1</version>
@@ -101,10 +105,6 @@
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
             <version>2.0.1</version> <!-- o 2.0.1 si la anterior no descarga -->
-=======
-            <groupId>com.mercadopago</groupId>
-            <artifactId>sdk-java</artifactId>
-            <version>2.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -114,8 +114,8 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
->>>>>>> 5a0da2d6ae15e36f23c4c1137a8c486a20d390ff
         </dependency>
+
     
       <dependency>
         <groupId>org.apache.velocity</groupId>
