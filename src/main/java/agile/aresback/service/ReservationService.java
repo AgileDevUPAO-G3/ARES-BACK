@@ -30,4 +30,8 @@ public interface ReservationService {
     void deleteById(Integer id);
 
     Reservation confirmAttendance(Integer id);
+
+    void markNoShowReservations();
+
+
 }

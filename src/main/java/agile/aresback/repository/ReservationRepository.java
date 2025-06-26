@@ -2,6 +2,7 @@ package agile.aresback.repository;
 
 import agile.aresback.model.entity.Reservation;
 import agile.aresback.model.enums.StateReservation;
+import agile.aresback.model.enums.StateReservationClient;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,6 +30,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
 
     List<Reservation> findAllByStateReservationAndCreatedAtBefore(StateReservation estado, LocalDateTime limite);
+
+    List<Reservation> findAllByStateReservationClient(StateReservationClient stateReservationClient);
 
 
 }
