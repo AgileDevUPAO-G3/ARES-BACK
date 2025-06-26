@@ -84,7 +84,7 @@ public class AppPaymentServiceImpl implements AppPaymentService {
                     .items(List.of(item))
                     .payer(payer)
                     .externalReference(dto.getExternalReference())
-                    .notificationUrl(backendBaseUrl + "/api/mercado-pago/webhook")
+                    .notificationUrl(backendBaseUrl + "/pacha-app/v1/api/mercado-pago/webhook")
                     .build();
 
 
