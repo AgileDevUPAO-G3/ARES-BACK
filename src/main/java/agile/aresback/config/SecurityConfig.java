@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reservations/**").permitAll() // POST crear reserva
                         .requestMatchers("/api/mercado-pago/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/tables/**").permitAll()g
+                        .requestMatchers("/api/tables/**").permitAll()
 
 
                         // Endpoints privados (requieren login)
