@@ -49,32 +49,6 @@ public class MesaController {
         return mesaMapper.toDTO(mesa);
     }
 
-    /*
-     * @PostMapping
-     * public MesaDto createMesa(@RequestBody MesaDto mesaDto) {
-     * Zone zone = zoneService.findById(mesaDto.getZoneId())
-     * .orElseThrow(() -> new RuntimeException("Zona no encontrada"));
-     * Mesa mesa = mesaMapper.toEntity(mesaDto, zone);
-     * Mesa saved = mesaService.save(mesa);
-     * return mesaMapper.toDTO(saved);
-     * }
-     * 
-     * @PutMapping("/{id}")
-     * public MesaDto updateMesa(@PathVariable Integer id, @RequestBody MesaDto
-     * mesaDto) {
-     * Zone zone = zoneService.findById(mesaDto.getZoneId())
-     * .orElseThrow(() -> new RuntimeException("Zona no encontrada"));
-     * Mesa mesa = mesaMapper.toEntity(mesaDto, zone);
-     * mesa.setId(id);
-     * Mesa updated = mesaService.save(mesa);
-     * return mesaMapper.toDTO(updated);
-     * }
-     * 
-     * @DeleteMapping("/{id}")
-     * public void deleteMesa(@PathVariable Integer id) {
-     * mesaService.deleteById(id);
-     * }
-     */
 
     @PutMapping("/{id}/estado")
     public ResponseEntity<Void> actualizarEstadoMesa(
